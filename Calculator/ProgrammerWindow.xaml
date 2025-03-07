@@ -1,0 +1,65 @@
+﻿<Window x:Class="Calculator.ProgrammerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Calculator"
+        mc:Ignorable="d"
+        Title="Programmer Calculator" Height="530" Width="318">
+
+    <Grid Background="#2D2D30">
+        <StackPanel Orientation="Vertical" Margin="10,10,10,0" VerticalAlignment="Top">
+            <TextBlock Text="HEX" Foreground="White" FontSize="14"/>
+            <TextBox Name="HexDisplay" FontSize="14" Foreground="White" Background="#1E1E1E" BorderThickness="0" IsReadOnly="True" Margin="0,5,0,10"/>
+            <TextBlock Text="DEC" Foreground="White" FontSize="14"/>
+            <TextBox Name="DecDisplay" FontSize="14" Foreground="White" Background="#1E1E1E" BorderThickness="0" IsReadOnly="True" Margin="0,5,0,10"/>
+            <TextBlock Text="OCT" Foreground="White" FontSize="14"/>
+            <TextBox Name="OctDisplay" FontSize="14" Foreground="White" Background="#1E1E1E" BorderThickness="0" IsReadOnly="True" Margin="0,5,0,10"/>
+            <TextBlock Text="BIN" Foreground="White" FontSize="14"/>
+            <TextBox Name="BinDisplay" FontSize="14" Foreground="White" Background="#1E1E1E" BorderThickness="0" IsReadOnly="True" Margin="0,5,0,10"/>
+        </StackPanel>
+
+        <Border Background="#333" CornerRadius="10" Margin="10,220,10,10" Padding="0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Content="AND" Grid.Row="0" Grid.Column="0" Background="#666" Foreground="White" FontSize="14" Click="Button_Logic_Click"/>
+                <Button Content="OR" Grid.Row="0" Grid.Column="1" Background="#666" Foreground="White" FontSize="14" Click="Button_Logic_Click"/>
+                <Button Content="XOR" Grid.Row="0" Grid.Column="2" Background="#666" Foreground="White" FontSize="14" Click="Button_Logic_Click"/>
+                <Button Content="NOT" Grid.Row="0" Grid.Column="3" Background="#666" Foreground="White" FontSize="14" Click="Button_Logic_Click"/>
+
+                <Button Content="&lt;&lt;" Grid.Row="1" Grid.Column="0" Background="#666" Foreground="White" FontSize="14" Click="Button_Shift_Click"/>
+                <Button Content=">>" Grid.Row="1" Grid.Column="1" Background="#666" Foreground="White" FontSize="14" Click="Button_Shift_Click"/>
+                <Button Content="ROL" Grid.Row="1" Grid.Column="2" Background="#666" Foreground="White" FontSize="14" Click="Button_Shift_Click"/>
+                <Button Content="ROR" Grid.Row="1" Grid.Column="3" Background="#666" Foreground="White" FontSize="14" Click="Button_Shift_Click"/>
+
+                <Button Content="A" Grid.Row="2" Grid.Column="0" Background="#444" Foreground="White" FontSize="14" Click="Button_Hex_Click"/>
+                <Button Content="B" Grid.Row="2" Grid.Column="1" Background="#444" Foreground="White" FontSize="14" Click="Button_Hex_Click"/>
+                <Button Content="C" Grid.Row="2" Grid.Column="2" Background="#444" Foreground="White" FontSize="14" Click="Button_Hex_Click"/>
+                <Button Content="D" Grid.Row="2" Grid.Column="3" Background="#444" Foreground="White" FontSize="14" Click="Button_Hex_Click"/>
+
+                <Button Content="E" Grid.Row="3" Grid.Column="0" Background="#444" Foreground="White" FontSize="14" Click="Button_Hex_Click"/>
+                <Button Content="F" Grid.Row="3" Grid.Column="1" Background="#444" Foreground="White" FontSize="14" Click="Button_Hex_Click"/>
+                <Button Content="0" Grid.Row="3" Grid.Column="2" Background="#444" Foreground="White" FontSize="14" Click="Button_Hex_Click"/>
+                <Button Content="1" Grid.Row="3" Grid.Column="3" Background="#444" Foreground="White" FontSize="14" Click="Button_Hex_Click"/>
+
+                <Button Content="2" Grid.Row="4" Grid.Column="0" Background="#444" Foreground="White" FontSize="14" Click="Button_Hex_Click"/>
+                <Button Content="3" Grid.Row="4" Grid.Column="1" Background="#444" Foreground="White" FontSize="14" Click="Button_Hex_Click"/>
+                <Button Content="4" Grid.Row="4" Grid.Column="2" Background="#444" Foreground="White" FontSize="14" Click="Button_Hex_Click"/>
+                <Button Content="5" Grid.Row="4" Grid.Column="3" Background="#444" Foreground="White" FontSize="14" Click="Button_Hex_Click"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

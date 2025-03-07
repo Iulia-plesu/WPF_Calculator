@@ -5,6 +5,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -22,7 +23,36 @@ namespace Calculator
         {
             InitializeComponent();
         }
+        private void MenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            ThicknessAnimation animation = new ThicknessAnimation
+            {
+                Duration = TimeSpan.FromSeconds(0.2)
+            };
 
+            if (SideMenu.Margin.Left < 0)
+            {
+                animation.To = new Thickness(0, 0, 0, 0); 
+            }
+            else
+            {
+                animation.To = new Thickness(-150, 0, 0, 0); 
+            }
+
+            SideMenu.BeginAnimation(MarginProperty, animation);
+        }
+
+        private void StandardButton_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow mainWindow = new MainWindow();
+            mainWindow.Show();
+        }
+
+        private void ProgrammerButton_Click(object sender, RoutedEventArgs e)
+        {
+            ProgrammerWindow programmerWindow = new ProgrammerWindow();
+            programmerWindow.Show();
+        }
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key >= Key.D0 && e.Key <= Key.D9)
