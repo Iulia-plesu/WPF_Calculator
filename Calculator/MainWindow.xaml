@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Calculator"
         mc:Ignorable="d"
-        Title="Calculator" Height="530" Width="318">
+        Title="Calculator" Height="530" Width="318" KeyDown="Window_KeyDown">
 
     <Grid Background="#2D2D30">
         <DockPanel LastChildFill="True" VerticalAlignment="Top" Height="40">
