@@ -46,12 +46,14 @@ namespace Calculator
         {
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
+            this.Close();
         }
 
         private void ProgrammerButton_Click(object sender, RoutedEventArgs e)
         {
             ProgrammerWindow programmerWindow = new ProgrammerWindow();
             programmerWindow.Show();
+            this.Close();
         }
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {

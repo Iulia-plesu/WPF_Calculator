@@ -49,7 +49,7 @@
         </Border>
 
         <DockPanel LastChildFill="True" VerticalAlignment="Top" Height="40">
-            <Button Content="☰" FontSize="16" Foreground="White" Margin="10,0,0,0" VerticalAlignment="Center" Click="MenuButton_Click"/>
+            <Button Content="☰" FontSize="16" Foreground="Black" Margin="10,0,0,0" VerticalAlignment="Center" Click="MenuButton_Click"/>
             <TextBlock Text="Standard" FontSize="14" Foreground="White" FontWeight="Bold" Margin="10,0,0,0" VerticalAlignment="Center"/>
             <DockPanel DockPanel.Dock="Right" Margin="0,0,10,0">
                 <TextBlock Text="&#xE74E;" FontSize="16" Foreground="White" FontFamily="Segoe MDL2 Assets" Margin="10,0,0,0" VerticalAlignment="Center"/>
