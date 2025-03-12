@@ -5,7 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Calculator"
         mc:Ignorable="d"
-        Title="Calculator" Height="530" Width="318" KeyDown="Window_KeyDown">
+        Title="Calculator" Height="530" Width="318">
+    <Window.DataContext>
+        <local:Standard/>
+    </Window.DataContext>
     <Window.Resources>
         <Style x:Key="MenuButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
@@ -14,15 +17,6 @@
             <Setter Property="Padding" Value="10"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -41,15 +35,17 @@
     </Window.Resources>
 
     <Grid Background="#2D2D30">
+        <!-- Meniul lateral -->
         <Border x:Name="SideMenu" Width="150" Background="#1E1E1E" HorizontalAlignment="Left" Margin="-150,0,0,0" Panel.ZIndex="1">
             <StackPanel>
-                <Button Content="Standard" Style="{StaticResource MenuButtonStyle}" Click="StandardButton_Click"/>
-                <Button Content="Programmer" Style="{StaticResource MenuButtonStyle}" Click="ProgrammerButton_Click"/>
+                <Button Content="Standard" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToStandardCommand}"/>
+                <Button Content="Programmer" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToProgrammerCommand}"/>
             </StackPanel>
         </Border>
 
+        <!-- Bara de sus -->
         <DockPanel LastChildFill="True" VerticalAlignment="Top" Height="40">
-            <Button Content="☰" FontSize="16" Foreground="Black" Margin="10,0,0,0" VerticalAlignment="Center" Click="MenuButton_Click"/>
+            <Button Content="☰" FontSize="16" Foreground="Black" Margin="10,0,0,0" VerticalAlignment="Center" Command="{Binding ToggleMenuCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
             <TextBlock Text="Standard" FontSize="14" Foreground="White" FontWeight="Bold" Margin="10,0,0,0" VerticalAlignment="Center"/>
             <DockPanel DockPanel.Dock="Right" Margin="0,0,10,0">
                 <TextBlock Text="&#xE74E;" FontSize="16" Foreground="White" FontFamily="Segoe MDL2 Assets" Margin="10,0,0,0" VerticalAlignment="Center"/>
@@ -57,8 +53,32 @@
             </DockPanel>
         </DockPanel>
 
-        <TextBox Name="Display" FontSize="28" Foreground="White" Background="#1E1E1E" BorderThickness="0" TextAlignment="Right"
-                 VerticalAlignment="Top" Margin="10,50,10,10" Height="50" IsReadOnly="True" VerticalContentAlignment="Center"/>
+        <!-- Afișajul operațiilor și rezultatului -->
+        <StackPanel Orientation="Vertical" Margin="10,40,10,0" VerticalAlignment="Top">
+            <TextBox Name="OperationDisplay" 
+         FontSize="14" 
+         Foreground="White" 
+         Background="#1E1E1E" 
+         BorderThickness="0" 
+         TextAlignment="Right" 
+         IsReadOnly="True" 
+         Margin="10,5,10,5" 
+         Text="{Binding OperationString, Mode=OneWay}"/>
+            <TextBox Name="Display" 
+         FontSize="24" 
+         Foreground="White" 
+         Background="#1E1E1E" 
+         BorderThickness="0" 
+         TextAlignment="Right"
+         VerticalAlignment="Top" 
+         Margin="10,-5,10,10" 
+         Height="50" 
+         IsReadOnly="True" 
+         VerticalContentAlignment="Center" 
+         Text="{Binding CurrentValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+
+        <!-- Butoane pentru memoria calculatorului -->
         <Border Background="#333" CornerRadius="10" Margin="10,120,10,10" Padding="0">
             <Grid>
                 <Grid.RowDefinitions>
@@ -73,15 +93,16 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Content="MC" Grid.Row="0" Grid.Column="0" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Click="Button_MC_Click"/>
-                <Button Content="MR" Grid.Row="0" Grid.Column="1" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Click="Button_MR_Click"/>
-                <Button Content="M+" Grid.Row="0" Grid.Column="2" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Click="Button_MPlus_Click"/>
-                <Button Content="M-" Grid.Row="0" Grid.Column="3" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Click="Button_MMinus_Click"/>
-                <Button Content="MS" Grid.Row="0" Grid.Column="4" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Click="Button_MS_Click"/>
-                <Button Content="Mv" Grid.Row="0" Grid.Column="5" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Click="Button_Mv_Click"/>
+                <Button Content="MC" Grid.Row="0" Grid.Column="0" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Command="{Binding MemoryClearCommand}"/>
+                <Button Content="MR" Grid.Row="0" Grid.Column="1" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Command="{Binding MemoryRecallCommand}"/>
+                <Button Content="M+" Grid.Row="0" Grid.Column="2" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Command="{Binding MemoryAddCommand}"/>
+                <Button Content="M-" Grid.Row="0" Grid.Column="3" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Command="{Binding MemorySubtractCommand}"/>
+                <Button Content="MS" Grid.Row="0" Grid.Column="4" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Command="{Binding MemoryStoreCommand}"/>
+                <Button Content="Mv" Grid.Row="0" Grid.Column="5" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Command="{Binding MemoryRecallCommand}"/>
             </Grid>
         </Border>
 
+        <!-- Butoanele principale ale calculatorului -->
         <Border Background="#333" CornerRadius="10" Margin="10,160,10,10" Padding="0">
             <Grid>
                 <Grid.RowDefinitions>
@@ -99,21 +120,11 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Content="%" Grid.Row="0" Grid.Column="0" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="0">
-                                <Border.CornerRadius>
-                                    <CornerRadius TopLeft="10" TopRight="0" BottomLeft="0" BottomRight="0"/>
-                                </Border.CornerRadius>
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-                <Button Content="CE" Grid.Row="0" Grid.Column="1" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10"/>
-                <Button Content="C" Grid.Row="0" Grid.Column="2" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10"/>
-                <Button Content="⌫" Grid.Row="0" Grid.Column="3" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Clear_Click">
+                <!-- Butoane pentru operații speciale -->
+                <Button Content="%" Grid.Row="0" Grid.Column="0" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding SetOperationCommand}" CommandParameter="%"/>
+                <Button Content="CE" Grid.Row="0" Grid.Column="1" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding ClearEntryCommand}"/>
+                <Button Content="C" Grid.Row="0" Grid.Column="2" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding ClearCommand}"/>
+                <Button Content="⌫" Grid.Row="0" Grid.Column="3" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding BackspaceCommand}">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="0">
@@ -126,27 +137,30 @@
                     </Button.Template>
                 </Button>
 
-                <Button Content="⅟x" Grid.Row="1" Grid.Column="0" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10"/>
-                <Button Content="x²" Grid.Row="1" Grid.Column="1" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10"/>
-                <Button Content="²√x" Grid.Row="1" Grid.Column="2" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10"/>
-                <Button Content="÷" Grid.Row="1" Grid.Column="3" Background="#666" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Operator_Click"/>
+                <!-- Butoane pentru operații matematice -->
+                <Button Content="⅟x" Grid.Row="1" Grid.Column="0" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding ReciprocalCommand}"/>
+                <Button Content="x²" Grid.Row="1" Grid.Column="1" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding SquareCommand}"/>
+                <Button Content="²√x" Grid.Row="1" Grid.Column="2" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding SquareRootCommand}"/>
+                <Button Content="÷" Grid.Row="1" Grid.Column="3" Background="#666" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding SetOperationCommand}" CommandParameter="÷"/>
 
-                <Button Content="7" Grid.Row="2" Grid.Column="0" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Click"/>
-                <Button Content="8" Grid.Row="2" Grid.Column="1" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Click"/>
-                <Button Content="9" Grid.Row="2" Grid.Column="2" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Click"/>
-                <Button Content="×" Grid.Row="2" Grid.Column="3" Background="#666" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Operator_Click"/>
+                <!-- Butoane pentru cifre -->
+                <Button Content="7" Grid.Row="2" Grid.Column="0" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding AppendNumberCommand}" CommandParameter="7"/>
+                <Button Content="8" Grid.Row="2" Grid.Column="1" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding AppendNumberCommand}" CommandParameter="8"/>
+                <Button Content="9" Grid.Row="2" Grid.Column="2" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding AppendNumberCommand}" CommandParameter="9"/>
+                <Button Content="×" Grid.Row="2" Grid.Column="3" Background="#666" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding SetOperationCommand}" CommandParameter="×"/>
 
-                <Button Content="4" Grid.Row="3" Grid.Column="0" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Click"/>
-                <Button Content="5" Grid.Row="3" Grid.Column="1" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Click"/>
-                <Button Content="6" Grid.Row="3" Grid.Column="2" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Click"/>
-                <Button Content="-" Grid.Row="3" Grid.Column="3" Background="#666" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Operator_Click"/>
+                <Button Content="4" Grid.Row="3" Grid.Column="0" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding AppendNumberCommand}" CommandParameter="4"/>
+                <Button Content="5" Grid.Row="3" Grid.Column="1" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding AppendNumberCommand}" CommandParameter="5"/>
+                <Button Content="6" Grid.Row="3" Grid.Column="2" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding AppendNumberCommand}" CommandParameter="6"/>
+                <Button Content="-" Grid.Row="3" Grid.Column="3" Background="#666" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding SetOperationCommand}" CommandParameter="-"/>
 
-                <Button Content="1" Grid.Row="4" Grid.Column="0" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Click"/>
-                <Button Content="2" Grid.Row="4" Grid.Column="1" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Click"/>
-                <Button Content="3" Grid.Row="4" Grid.Column="2" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Click"/>
-                <Button Content="+" Grid.Row="4" Grid.Column="3" Background="#666" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Operator_Click"/>
+                <Button Content="1" Grid.Row="4" Grid.Column="0" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding AppendNumberCommand}" CommandParameter="1"/>
+                <Button Content="2" Grid.Row="4" Grid.Column="1" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding AppendNumberCommand}" CommandParameter="2"/>
+                <Button Content="3" Grid.Row="4" Grid.Column="2" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding AppendNumberCommand}" CommandParameter="3"/>
+                <Button Content="+" Grid.Row="4" Grid.Column="3" Background="#666" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding SetOperationCommand}" CommandParameter="+"/>
 
-                <Button Content="±" Grid.Row="5" Grid.Column="0" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_ChangeSign_Click">
+                <!-- Butoane pentru operații suplimentare -->
+                <Button Content="±" Grid.Row="5" Grid.Column="0" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding ChangeSignCommand}">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="0">
@@ -158,9 +172,9 @@
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
-                <Button Content="0" Grid.Row="5" Grid.Column="1" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Click"/>
-                <Button Content="." Grid.Row="5" Grid.Column="2" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Dot_Click"/>
-                <Button Content="=" Grid.Row="5" Grid.Column="3" Background="#A084E8" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Equals_Click">
+                <Button Content="0" Grid.Row="5" Grid.Column="1" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding AppendNumberCommand}" CommandParameter="0"/>
+                <Button Content="." Grid.Row="5" Grid.Column="2" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding AddDecimalPointCommand}"/>
+                <Button Content="=" Grid.Row="5" Grid.Column="3" Background="#A084E8" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding CalculateCommand}">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="0">

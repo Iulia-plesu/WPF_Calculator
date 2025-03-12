@@ -13,7 +13,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
 using System;
-using System.Windows;
 using System.Windows.Media.Animation;
 
 namespace Calculator
@@ -115,7 +114,40 @@ namespace Calculator
 
         private void Button_Base_Click(object sender, RoutedEventArgs e)
         {
+            Button button = sender as Button;
+            if (button != null)
+            {
+                string baseType = button.Content.ToString();
+                int value = int.Parse(Display.Text);
 
+                switch (baseType)
+                {
+                    case "HEX":
+                        HEXDisplay.Text = Convert.ToString(value, 16).ToUpper();
+                        DECDisplay.Text = value.ToString();
+                        OCTDisplay.Text = Convert.ToString(value, 8);
+                        BINDisplay.Text = Convert.ToString(value, 2);
+                        break;
+                    case "DEC":
+                        HEXDisplay.Text = Convert.ToString(value, 16).ToUpper();
+                        DECDisplay.Text = value.ToString();
+                        OCTDisplay.Text = Convert.ToString(value, 8);
+                        BINDisplay.Text = Convert.ToString(value, 2);
+                        break;
+                    case "OCT":
+                        HEXDisplay.Text = Convert.ToString(value, 16).ToUpper();
+                        DECDisplay.Text = value.ToString();
+                        OCTDisplay.Text = Convert.ToString(value, 8);
+                        BINDisplay.Text = Convert.ToString(value, 2);
+                        break;
+                    case "BIN":
+                        HEXDisplay.Text = Convert.ToString(value, 16).ToUpper();
+                        DECDisplay.Text = value.ToString();
+                        OCTDisplay.Text = Convert.ToString(value, 8);
+                        BINDisplay.Text = Convert.ToString(value, 2);
+                        break;
+                }
+            }
         }
     }
 }

@@ -6,6 +6,9 @@
         xmlns:local="clr-namespace:Calculator"
         mc:Ignorable="d"
         Title="Programmer Calculator" Height="530" Width="318">
+    <Window.DataContext>
+        <local:Standard/>
+    </Window.DataContext>
     <Window.Resources>
         <Style x:Key="MenuButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
@@ -32,15 +35,17 @@
     </Window.Resources>
 
     <Grid Background="#2D2D30">
+        <!-- Meniul lateral -->
         <Border x:Name="SideMenu" Width="150" Background="#1E1E1E" HorizontalAlignment="Left" Margin="-150,0,0,0" Panel.ZIndex="1">
             <StackPanel>
-                <Button Content="Standard" Style="{StaticResource MenuButtonStyle}" Click="StandardButton_Click"/>
-                <Button Content="Programmer" Style="{StaticResource MenuButtonStyle}" Click="ProgrammerButton_Click"/>
+                <Button Content="Standard" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToStandardCommand}"/>
+                <Button Content="Programmer" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToProgrammerCommand}"/>
             </StackPanel>
         </Border>
 
+        <!-- Bara de sus -->
         <DockPanel LastChildFill="True" VerticalAlignment="Top" Height="40">
-            <Button Content="☰" FontSize="16" Foreground="Black" Margin="10,0,0,0" VerticalAlignment="Center" Click="MenuButton_Click"/>
+            <Button Content="☰" FontSize="16" Foreground="Black" Margin="10,0,0,0" VerticalAlignment="Center" Command="{Binding ToggleMenuCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
             <TextBlock Text="Programmer" FontSize="14" Foreground="White" FontWeight="Bold" Margin="10,0,0,0" VerticalAlignment="Center"/>
         </DockPanel>
 
@@ -58,7 +63,7 @@
         </StackPanel>
         <StackPanel Orientation="Vertical" Margin="40,113,10,10" VerticalAlignment="Top">
             <TextBox Name="HEXDisplay" FontSize="10" Foreground="White" Background="#1E1E1E" BorderThickness="0" TextAlignment="Right" IsReadOnly="True" Margin="10,5,10,0"/>
-            <TextBox Name="DECisplay" FontSize="10" Foreground="White" Background="#1E1E1E" BorderThickness="0" TextAlignment="Right" IsReadOnly="True" Margin="10,5,10,0"/>
+            <TextBox Name="DECDisplay" FontSize="10" Foreground="White" Background="#1E1E1E" BorderThickness="0" TextAlignment="Right" IsReadOnly="True" Margin="10,5,10,0"/>
             <TextBox Name="OCTDisplay" FontSize="10" Foreground="White" Background="#1E1E1E" BorderThickness="0" TextAlignment="Right" IsReadOnly="True" Margin="10,5,10,0"/>
             <TextBox Name="BINDisplay" FontSize="10" Foreground="White" Background="#1E1E1E" BorderThickness="0" TextAlignment="Right" IsReadOnly="True" Margin="10,5,10,0"/>
         </StackPanel>
