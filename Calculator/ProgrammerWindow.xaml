@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Calculator"
         mc:Ignorable="d"
-        Title="Programmer" Height="530" Width="318">
+        Title="Programmer" Height="530" Width="318"
+        KeyDown="Window_KeyDown">
     <Window.DataContext>
         <local:Programmer/>
     </Window.DataContext>
@@ -53,29 +54,59 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+        <Style x:Key="MenuStyle" TargetType="Menu">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="Gray"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#333"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="MenuItemStyle" TargetType="MenuItem">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#333"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Grid Background="#2D2D30">
         <!-- Meniul lateral -->
-        <Border x:Name="SideMenu" Width="150" Background="#1E1E1E" HorizontalAlignment="Left" Margin="-150,0,0,0" Panel.ZIndex="1">
+        <Border x:Name="SideMenu" Width="150" Background="#1E1E1E" HorizontalAlignment="Left" Margin="-150,0,0,0" Panel.ZIndex="1"
+        MouseEnter="SideMenu_MouseEnter" MouseLeave="SideMenu_MouseLeave">
             <StackPanel>
-                <Button Content="Standard" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToStandardCommand}"/>
-                <Button Content="Programmer" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToProgrammerCommand}"/>
-                <Menu >
-                    <MenuItem Header="File" >
-                        <MenuItem Header="Cut"  Command="{Binding CutCommand}"/>
-                        <MenuItem Header="Copy" Command="{Binding CopyCommand}"/>
-                        <MenuItem Header="Paste" Command="{Binding PasteCommand}"/>
+                <!-- Butoane din meniu lateral -->
+                <Button Content="Standard" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToStandardCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+                <Button Content="Programmer" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToProgrammerCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+
+                <!-- Meniu File -->
+                <Menu Style="{StaticResource MenuStyle}">
+                    <MenuItem Header="File" Style="{StaticResource MenuItemStyle}">
+                        <MenuItem Header="Cut" Command="{Binding CutCommand}" Style="{StaticResource MenuItemStyle}"/>
+                        <MenuItem Header="Copy" Command="{Binding CopyCommand}" Style="{StaticResource MenuItemStyle}"/>
+                        <MenuItem Header="Paste" Command="{Binding PasteCommand}" Style="{StaticResource MenuItemStyle}"/>
                     </MenuItem>
                 </Menu>
-                <Menu>
-                    <MenuItem Header="Help">
-                        <MenuItem Header="About" Command="{Binding AbboutCommand}"/>
+
+                <!-- Meniu Help -->
+                <Menu Style="{StaticResource MenuStyle}">
+                    <MenuItem Header="Help" Style="{StaticResource MenuItemStyle}">
+                        <MenuItem Header="About" Command="{Binding AboutCommand}" Style="{StaticResource MenuItemStyle}"/>
                     </MenuItem>
                 </Menu>
             </StackPanel>
         </Border>
-
         <!-- Bara de sus -->
         <DockPanel LastChildFill="True" VerticalAlignment="Top" Height="40">
             <Button Content="☰" FontSize="16" Foreground="Black" Margin="10,0,0,0" VerticalAlignment="Center" Command="{Binding ToggleMenuCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>

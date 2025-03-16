@@ -127,18 +127,33 @@ namespace Calculator
 
         private void SwitchToStandard(object parameter)
         {
+            Settings.Default.CalculatorMode = "Standard"; // Salvează modul Standard
+            Settings.Default.Save(); // Salvează setările
+
             var mainWindow = new MainWindow();
             mainWindow.Show();
-            Application.Current.Windows[0]?.Close();
+
+            // Închide fereastra curentă după ce fereastra nouă a fost afișată
+            if (parameter is Window currentWindow)
+            {
+                currentWindow.Close();
+            }
         }
 
         private void SwitchToProgrammer(object parameter)
         {
+            Settings.Default.CalculatorMode = "Programmer"; // Salvează modul Programmer
+            Settings.Default.Save(); // Salvează setările
+
             var programmerWindow = new ProgrammerWindow();
             programmerWindow.Show();
-            Application.Current.Windows[0]?.Close();
-        }
 
+            // Închide fereastra curentă după ce fereastra nouă a fost afișată
+            if (parameter is Window currentWindow)
+            {
+                currentWindow.Close();
+            }
+        }
         private void ToggleMenu(object parameter)
         {
             if (parameter is Window window && window.FindName("SideMenu") is Border sideMenu)

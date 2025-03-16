@@ -9,6 +9,35 @@ namespace Calculator
 {
     public class Standard : ICommand, INotifyPropertyChanged
     {
+        private void SwitchToStandard(object parameter)
+        {
+            Settings.Default.CalculatorMode = "Standard"; // Salvează modul Standard
+            Settings.Default.Save(); // Salvează setările
+
+            var mainWindow = new MainWindow();
+            mainWindow.Show();
+
+            // Închide fereastra curentă după ce fereastra nouă a fost afișată
+            if (parameter is Window currentWindow)
+            {
+                currentWindow.Close();
+            }
+        }
+
+        private void SwitchToProgrammer(object parameter)
+        {
+            Settings.Default.CalculatorMode = "Programmer"; // Salvează modul Programmer
+            Settings.Default.Save(); // Salvează setările
+
+            var programmerWindow = new ProgrammerWindow();
+            programmerWindow.Show();
+
+            // Închide fereastra curentă după ce fereastra nouă a fost afișată
+            if (parameter is Window currentWindow)
+            {
+                currentWindow.Close();
+            }
+        }
         public event EventHandler CanExecuteChanged;
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -107,20 +136,7 @@ namespace Calculator
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private void SwitchToStandard(object parameter)
-        {
-            var mainWindow = new MainWindow();
-            mainWindow.Show();
-            Application.Current.Windows[0]?.Close();
-        }
-
-        private void SwitchToProgrammer(object parameter)
-        {
-            var programmerWindow = new ProgrammerWindow();
-            programmerWindow.Show();
-            Application.Current.Windows[0]?.Close();
-        }
-
+       
         private void ToggleMenu(object parameter)
         {
             if (parameter is Window window && window.FindName("SideMenu") is Border sideMenu)
@@ -188,13 +204,22 @@ namespace Calculator
             {
                 if (_isNewNumber)
                 {
-                    CurrentValue = double.Parse(number);
+                    CurrentValue = double.Parse(number, CultureInfo.InvariantCulture);
                     _isNewNumber = false;
                 }
                 else
                 {
-                    CurrentValue = double.Parse(CurrentValue.ToString() + number);
+                    string currentValueStr = CurrentValue.ToString(CultureInfo.InvariantCulture);
+
+                    if (number == "." && currentValueStr.Contains("."))
+                    {
+                        return; 
+                    }
+
+                    currentValueStr += number;
+                    CurrentValue = double.Parse(currentValueStr, CultureInfo.InvariantCulture);
                 }
+
                 OperationString += number;
             }
         }
@@ -203,19 +228,28 @@ namespace Calculator
         {
             if (parameter is string operation)
             {
-                if (!_isNewNumber)
+                if (string.IsNullOrEmpty(_currentOperation) && _isNewNumber)
+                {
+                    // Dacă apăsăm un operator imediat după egal, începem un nou calcul
+                    OperationString = $"{CurrentValue} {operation} ";
+                }
+                else
                 {
                     if (!string.IsNullOrEmpty(_currentOperation))
                     {
+                        // Calculează rezultatul intermediar
                         Calculate(null);
                     }
+                    // Setează primul operand și operatorul
                     _firstOperand = CurrentValue;
-                    _currentOperation = operation;
-                    _isNewNumber = true;
-                    OperationString += $" {operation} ";
+                    OperationString = $"{_firstOperand} {operation} ";
                 }
+
+                _currentOperation = operation;
+                _isNewNumber = true;
             }
         }
+
 
         private void Calculate(object parameter)
         {
@@ -224,37 +258,52 @@ namespace Calculator
                 double secondValue = CurrentValue;
                 double result = 0;
 
-                switch (_currentOperation)
+                try
                 {
-                    case "+":
-                        result = _firstOperand + secondValue;
-                        break;
-                    case "-":
-                        result = _firstOperand - secondValue;
-                        break;
-                    case "×":
-                        result = _firstOperand * secondValue;
-                        break;
-                    case "÷":
-                        result = _firstOperand / secondValue;
-                        break;
-                }
+                    switch (_currentOperation)
+                    {
+                        case "+":
+                            result = _firstOperand + secondValue;
+                            break;
+                        case "-":
+                            result = _firstOperand - secondValue;
+                            break;
+                        case "×":
+                            result = _firstOperand * secondValue;
+                            break;
+                        case "÷":
+                            if (secondValue == 0)
+                            {
+                                MessageBox.Show("Cannot divide by zero.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                                return;
+                            }
+                            result = _firstOperand / secondValue;
+                            break;
+                    }
 
-                CurrentValue = result;
-                _firstOperand = result;
-                _currentOperation = string.Empty;
-                _isNewNumber = true;
-                OperationString += $" = {result}";
+                    // Actualizează rezultatul
+                    CurrentValue = result;
+                    _firstOperand = result; // Rezultatul devine primul termen al următoarei operații
+                    secondValue = 0;
+                    _currentOperation = string.Empty;
+                    _isNewNumber = true;
+
+                    // Actualizează afișajul operației
+                    OperationString += $" = {result}";
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
-
         private void ChangeSign(object parameter) => CurrentValue = -CurrentValue;
 
         private void AddDecimalPoint(object parameter)
         {
-            if (!CurrentValue.ToString().Contains("."))
+            if (!CurrentValue.ToString(CultureInfo.InvariantCulture).Contains("."))
             {
-                CurrentValue = double.Parse(CurrentValue.ToString() + ".");
+                CurrentValue = double.Parse(CurrentValue.ToString(CultureInfo.InvariantCulture) + ".");
                 OperationString += ".";
             }
         }
