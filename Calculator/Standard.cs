@@ -9,15 +9,15 @@ namespace Calculator
 {
     public class Standard : ICommand, INotifyPropertyChanged
     {
+        private List<double> _memoryStack = new List<double>();
         private void SwitchToStandard(object parameter)
         {
-            Settings.Default.CalculatorMode = "Standard"; // Salvează modul Standard
-            Settings.Default.Save(); // Salvează setările
+            Settings.Default.CalculatorMode = "Standard"; 
+            Settings.Default.Save(); 
 
             var mainWindow = new MainWindow();
             mainWindow.Show();
 
-            // Închide fereastra curentă după ce fereastra nouă a fost afișată
             if (parameter is Window currentWindow)
             {
                 currentWindow.Close();
@@ -26,18 +26,18 @@ namespace Calculator
 
         private void SwitchToProgrammer(object parameter)
         {
-            Settings.Default.CalculatorMode = "Programmer"; // Salvează modul Programmer
-            Settings.Default.Save(); // Salvează setările
+            Settings.Default.CalculatorMode = "Programmer";
+            Settings.Default.Save(); 
 
             var programmerWindow = new ProgrammerWindow();
             programmerWindow.Show();
 
-            // Închide fereastra curentă după ce fereastra nouă a fost afișată
             if (parameter is Window currentWindow)
             {
                 currentWindow.Close();
             }
         }
+
         public event EventHandler CanExecuteChanged;
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -63,6 +63,9 @@ namespace Calculator
         public ICommand CopyCommand { get; }
         public ICommand PasteCommand { get; }
         public ICommand AboutCommand { get; }
+        public ICommand PercentageCommand { get; }
+        public ICommand ClearEntryCommand { get; }
+        public ICommand MemoryStackCommand { get; }
 
         private double _memory = 0;
         private double _currentValue = 0;
@@ -70,19 +73,7 @@ namespace Calculator
         private string _currentOperation = string.Empty;
         private string _operationString = string.Empty;
         private bool _isNewNumber = true;
-
-        public double CurrentValue
-        {
-            get => _currentValue;
-            set
-            {
-                if (_currentValue != value)
-                {
-                    _currentValue = value;
-                    OnPropertyChanged(nameof(CurrentValue));
-                }
-            }
-        }
+        private bool _digitGroupingEnabled;
 
         public string OperationString
         {
@@ -93,9 +84,39 @@ namespace Calculator
                 {
                     _operationString = value;
                     OnPropertyChanged(nameof(OperationString));
+                    OnPropertyChanged(nameof(FormattedOperationString)); 
                 }
             }
         }
+
+        public double CurrentValue
+        {
+            get => _currentValue;
+            set
+            {
+                if (_currentValue != value)
+                {
+                    _currentValue = value;
+                    OnPropertyChanged(nameof(CurrentValue));
+                    OnPropertyChanged(nameof(CurrentValueDisplay));
+                }
+            }
+        }
+
+        public bool DigitGroupingEnabled
+        {
+            get => _digitGroupingEnabled;
+            set
+            {
+                _digitGroupingEnabled = value;
+                OnPropertyChanged(nameof(DigitGroupingEnabled));
+                OnPropertyChanged(nameof(CurrentValueDisplay));
+            }
+        }
+
+        public string FormattedOperationString => DigitGroupingEnabled
+            ? FormatOperationStringWithDigitGrouping(_operationString)
+            : _operationString;
 
         public Standard()
         {
@@ -113,6 +134,7 @@ namespace Calculator
             ChangeSignCommand = new RelayCommand(ChangeSign);
             AddDecimalPointCommand = new RelayCommand(AddDecimalPoint);
             ClearCommand = new RelayCommand(Clear);
+            ClearEntryCommand = new RelayCommand(ClearEntry);
             BackspaceCommand = new RelayCommand(Backspace);
             ReciprocalCommand = new RelayCommand(Reciprocal);
             SquareCommand = new RelayCommand(Square);
@@ -121,10 +143,37 @@ namespace Calculator
             CopyCommand = new RelayCommand(Copy);
             PasteCommand = new RelayCommand(Paste);
             AboutCommand = new RelayCommand(About);
+            PercentageCommand = new RelayCommand(CalculatePercentage);
+            MemoryAddCommand = new RelayCommand(MemoryAdd);
+            MemoryStackCommand = new RelayCommand(MemoryStack);
 
             DigitGroupingEnabled = Settings.Default.DigitGroupingEnabled;
         }
 
+        private void MemoryStack(object parameter)
+        {
+            if (_memoryStack.Count == 0)
+            {
+                MessageBox.Show("Stiva de memorie este goală.", "Stiva de Memorie", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var selectionWindow = new MemorySelectionWindow(_memoryStack);
+            if (selectionWindow.ShowDialog() == true)
+            {
+                if (string.IsNullOrEmpty(_currentOperation))
+                {
+                    CurrentValue = selectionWindow.SelectedValue;
+                    OperationString = selectionWindow.SelectedValue.ToString(); 
+                }
+                else
+                {
+                    CurrentValue = selectionWindow.SelectedValue;
+                    OperationString += selectionWindow.SelectedValue.ToString(); 
+                }
+            }
+        }
+        
         public void SaveSettings()
         {
             Settings.Default.DigitGroupingEnabled = DigitGroupingEnabled;
@@ -135,7 +184,6 @@ namespace Calculator
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
        
         private void ToggleMenu(object parameter)
         {
@@ -167,34 +215,68 @@ namespace Calculator
                 }
             }
         }
-
-        private bool _digitGroupingEnabled = false;
-        public bool DigitGroupingEnabled
+        
+        private void About(object parameter)
         {
-            get => _digitGroupingEnabled;
-            set
-            {
-                _digitGroupingEnabled = value;
-                OnPropertyChanged(nameof(DigitGroupingEnabled));
-                OnPropertyChanged(nameof(CurrentValueDisplay));
-            }
+            MessageBox.Show("Nume: Iulia\nGrupă: 10LF233", "About");
         }
 
-        public string CurrentValueDisplay => DigitGroupingEnabled ? FormatWithDigitGrouping(CurrentValue) : CurrentValue.ToString();
+        private void CalculatePercentage(object parameter)
+        {
+            if (_currentOperation == "+" || _currentOperation == "-")
+            {
+                double percentageValue = _firstOperand * (CurrentValue / 100);
+                CurrentValue = percentageValue;
+
+            }
+            else
+            {
+                CurrentValue = CurrentValue / 100;
+            }
+
+            _isNewNumber = true;
+        }
 
         private string FormatWithDigitGrouping(double value)
         {
-            return value.ToString("N", CultureInfo.CurrentCulture);
+            return value.ToString("N0", CultureInfo.CurrentCulture);
         }
-
-        private void About(object parameter)
-        {
-            MessageBox.Show("Nume: Pleșu Iulia\nGrupă: 10LF233", "About");
-        }
-
+        
+        public string CurrentValueDisplay => DigitGroupingEnabled
+            ? FormatWithDigitGrouping(CurrentValue)
+            : CurrentValue.ToString(CultureInfo.InvariantCulture);
+        
         private void MemoryClear(object parameter) => _memory = 0;
-        private void MemoryRecall(object parameter) => CurrentValue = _memory;
-        private void MemoryAdd(object parameter) => _memory += CurrentValue;
+        
+        private void MemoryRecall(object parameter)
+        {
+            if (_memoryStack.Count == 0)
+            {
+                MessageBox.Show("Stiva de memorie este goală.", "Eroare", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var selectionWindow = new MemorySelectionWindow(_memoryStack);
+            if (selectionWindow.ShowDialog() == true)
+            {
+                if (string.IsNullOrEmpty(_currentOperation))
+                {
+                    CurrentValue = selectionWindow.SelectedValue;
+                    OperationString = selectionWindow.SelectedValue.ToString(); 
+                }
+                else
+                {
+                    CurrentValue = selectionWindow.SelectedValue;
+                    OperationString += selectionWindow.SelectedValue.ToString(); 
+                }
+            }
+        }
+        private void MemoryAdd(object parameter)
+        {
+            _memory += CurrentValue;
+            _memoryStack.Add(CurrentValue);
+
+        }
         private void MemorySubtract(object parameter) => _memory -= CurrentValue;
         private void MemoryStore(object parameter) => _memory = CurrentValue;
 
@@ -223,24 +305,45 @@ namespace Calculator
                 OperationString += number;
             }
         }
+        private string FormatOperationStringWithDigitGrouping(string operationString)
+        {
+            var parts = operationString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var formattedParts = new List<string>();
 
+            foreach (var part in parts)
+            {
+                if (double.TryParse(part, out double number))
+                {
+                    formattedParts.Add(FormatWithDigitGrouping(number));
+                }
+                else
+                {
+                    formattedParts.Add(part);
+                }
+            }
+
+            return string.Join(" ", formattedParts);
+        }
         private void SetOperation(object parameter)
         {
             if (parameter is string operation)
             {
+                if (operation == "%")
+                {
+                    CalculatePercentage(null);
+                    return;
+                }
+
                 if (string.IsNullOrEmpty(_currentOperation) && _isNewNumber)
                 {
-                    // Dacă apăsăm un operator imediat după egal, începem un nou calcul
                     OperationString = $"{CurrentValue} {operation} ";
                 }
                 else
                 {
                     if (!string.IsNullOrEmpty(_currentOperation))
                     {
-                        // Calculează rezultatul intermediar
                         Calculate(null);
                     }
-                    // Setează primul operand și operatorul
                     _firstOperand = CurrentValue;
                     OperationString = $"{_firstOperand} {operation} ";
                 }
@@ -279,17 +382,18 @@ namespace Calculator
                             }
                             result = _firstOperand / secondValue;
                             break;
+                        case "%":
+                            result = _firstOperand * (secondValue / 100);
+                            break;
                     }
 
-                    // Actualizează rezultatul
                     CurrentValue = result;
-                    _firstOperand = result; // Rezultatul devine primul termen al următoarei operații
+                    _firstOperand = result; 
                     secondValue = 0;
                     _currentOperation = string.Empty;
                     _isNewNumber = true;
 
-                    // Actualizează afișajul operației
-                    OperationString += $" = {result}";
+                    OperationString += $" = {FormatWithDigitGrouping(result)}";
                 }
                 catch (Exception ex)
                 {
@@ -308,15 +412,6 @@ namespace Calculator
             }
         }
 
-        private void Clear(object parameter)
-        {
-            CurrentValue = 0;
-            _firstOperand = 0;
-            _currentOperation = string.Empty;
-            OperationString = string.Empty;
-            _isNewNumber = true;
-        }
-
         private void Backspace(object parameter)
         {
             if (CurrentValue.ToString().Length > 1)
@@ -329,6 +424,22 @@ namespace Calculator
                 CurrentValue = 0;
                 OperationString = string.Empty;
             }
+        }
+
+        private void ClearEntry(object parameter)
+        {
+            CurrentValue = 0;
+            OperationString = string.Empty;
+            _isNewNumber = true;
+        }
+
+        private void Clear(object parameter)
+        {
+            CurrentValue = 0;
+            _firstOperand = 0;
+            _currentOperation = string.Empty;
+            OperationString = string.Empty;
+            _isNewNumber = true;
         }
 
         private void Reciprocal(object parameter) => CurrentValue = 1 / CurrentValue;

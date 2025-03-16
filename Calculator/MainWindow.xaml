@@ -62,15 +62,12 @@
     </Window.Resources>
 
     <Grid Background="#2D2D30">
-        <!-- Meniul lateral -->
         <Border x:Name="SideMenu" Width="150" Background="#1E1E1E" HorizontalAlignment="Left" Margin="-150,0,0,0" Panel.ZIndex="1"
                 MouseEnter="SideMenu_MouseEnter" MouseLeave="SideMenu_MouseLeave">
             <StackPanel>
-                <!-- Butoane din meniu lateral -->
                 <Button Content="Standard" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToStandardCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
                 <Button Content="Programmer" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToProgrammerCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
 
-                <!-- Meniu File -->
                 <Menu Style="{StaticResource MenuStyle}">
                     <MenuItem Header="File" Style="{StaticResource MenuItemStyle}">
                         <MenuItem Header="Cut" Command="{Binding CutCommand}" Style="{StaticResource MenuItemStyle}"/>
@@ -79,7 +76,6 @@
                     </MenuItem>
                 </Menu>
 
-                <!-- Meniu Help -->
                 <Menu Style="{StaticResource MenuStyle}">
                     <MenuItem Header="Help" Style="{StaticResource MenuItemStyle}">
                         <MenuItem Header="About" Command="{Binding AboutCommand}" Style="{StaticResource MenuItemStyle}"/>
@@ -88,7 +84,6 @@
             </StackPanel>
         </Border>
 
-        <!-- Bara de sus și restul UI-ului -->
         <DockPanel LastChildFill="True" VerticalAlignment="Top" Height="40">
             <Button Content="☰" FontSize="16" Foreground="Black" Margin="10,0,0,0" VerticalAlignment="Center" Command="{Binding ToggleMenuCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
             <TextBlock Text="Standard" FontSize="14" Foreground="White" FontWeight="Bold" Margin="10,0,0,0" VerticalAlignment="Center"/>
@@ -98,7 +93,6 @@
             </DockPanel>
         </DockPanel>
 
-        <!-- Afișajul operațiilor și rezultatului -->
         <StackPanel Orientation="Vertical" Margin="10,40,10,0" VerticalAlignment="Top">
             <TextBox Name="OperationDisplay" 
          FontSize="14" 
@@ -108,7 +102,7 @@
          TextAlignment="Right" 
          IsReadOnly="True" 
          Margin="10,5,10,5" 
-         Text="{Binding OperationString, Mode=OneWay}"/>
+         Text="{Binding OperationString, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
             <TextBox Name="Display" 
          FontSize="24" 
          Foreground="White" 
@@ -123,7 +117,6 @@
          Text="{Binding CurrentValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
         </StackPanel>
 
-        <!-- Butoane pentru memoria calculatorului -->
         <Border Background="#333" CornerRadius="10" Margin="10,120,10,10" Padding="0">
             <Grid>
                 <Grid.RowDefinitions>
@@ -143,11 +136,10 @@
                 <Button Content="M+" Grid.Row="0" Grid.Column="2" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Command="{Binding MemoryAddCommand}"/>
                 <Button Content="M-" Grid.Row="0" Grid.Column="3" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Command="{Binding MemorySubtractCommand}"/>
                 <Button Content="MS" Grid.Row="0" Grid.Column="4" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Command="{Binding MemoryStoreCommand}"/>
-                <Button Content="Mv" Grid.Row="0" Grid.Column="5" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Command="{Binding MemoryRecallCommand}"/>
+                <Button Content="Mv" Grid.Row="0" Grid.Column="5" Background="#2D2D30" Foreground="White" FontSize="10" Padding="10" BorderBrush="Transparent" BorderThickness="0" Margin="0" Command="{Binding MemoryStackCommand}"/>
             </Grid>
         </Border>
 
-        <!-- Butoanele principale ale calculatorului -->
         <Border Background="#333" CornerRadius="10" Margin="10,160,10,10" Padding="0">
             <Grid>
                 <Grid.RowDefinitions>
@@ -165,8 +157,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Butoane pentru operații speciale -->
-                <Button Content="%" Grid.Row="0" Grid.Column="0" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding SetOperationCommand}" CommandParameter="%"/>
+                <Button Content="%" Grid.Row="0" Grid.Column="0" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding PercentageCommand}"/>
                 <Button Content="CE" Grid.Row="0" Grid.Column="1" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding ClearEntryCommand}"/>
                 <Button Content="C" Grid.Row="0" Grid.Column="2" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding ClearCommand}"/>
                 <Button Content="⌫" Grid.Row="0" Grid.Column="3" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding BackspaceCommand}">
@@ -182,13 +173,11 @@
                     </Button.Template>
                 </Button>
 
-                <!-- Butoane pentru operații matematice -->
                 <Button Content="⅟x" Grid.Row="1" Grid.Column="0" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding ReciprocalCommand}"/>
                 <Button Content="x²" Grid.Row="1" Grid.Column="1" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding SquareCommand}"/>
                 <Button Content="²√x" Grid.Row="1" Grid.Column="2" Background="#666" Foreground="White" FontSize="15" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding SquareRootCommand}"/>
                 <Button Content="÷" Grid.Row="1" Grid.Column="3" Background="#666" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding SetOperationCommand}" CommandParameter="÷"/>
 
-                <!-- Butoane pentru cifre -->
                 <Button Content="7" Grid.Row="2" Grid.Column="0" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding AppendNumberCommand}" CommandParameter="7"/>
                 <Button Content="8" Grid.Row="2" Grid.Column="1" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding AppendNumberCommand}" CommandParameter="8"/>
                 <Button Content="9" Grid.Row="2" Grid.Column="2" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding AppendNumberCommand}" CommandParameter="9"/>
@@ -204,7 +193,6 @@
                 <Button Content="3" Grid.Row="4" Grid.Column="2" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding AppendNumberCommand}" CommandParameter="3"/>
                 <Button Content="+" Grid.Row="4" Grid.Column="3" Background="#666" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding SetOperationCommand}" CommandParameter="+"/>
 
-                <!-- Butoane pentru operații suplimentare -->
                 <Button Content="±" Grid.Row="5" Grid.Column="0" Background="#444" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding ChangeSignCommand}">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
