@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -11,12 +12,9 @@ namespace Calculator
         public event EventHandler CanExecuteChanged;
         public event PropertyChangedEventHandler PropertyChanged;
 
-        // Comenzi pentru meniul lateral
         public ICommand SwitchToStandardCommand { get; }
         public ICommand SwitchToProgrammerCommand { get; }
         public ICommand ToggleMenuCommand { get; }
-
-        // Comenzi pentru butoanele calculatorului
         public ICommand MemoryClearCommand { get; }
         public ICommand MemoryRecallCommand { get; }
         public ICommand MemoryAddCommand { get; }
@@ -32,8 +30,11 @@ namespace Calculator
         public ICommand ReciprocalCommand { get; }
         public ICommand SquareCommand { get; }
         public ICommand SquareRootCommand { get; }
+        public ICommand CutCommand { get; }
+        public ICommand CopyCommand { get; }
+        public ICommand PasteCommand { get; }
+        public ICommand AboutCommand { get; }
 
-        // Câmpuri și proprietăți
         private double _memory = 0;
         private double _currentValue = 0;
         private double _firstOperand = 0;
@@ -41,7 +42,6 @@ namespace Calculator
         private string _operationString = string.Empty;
         private bool _isNewNumber = true;
 
-        // Proprietatea CurrentValue
         public double CurrentValue
         {
             get => _currentValue;
@@ -55,7 +55,6 @@ namespace Calculator
             }
         }
 
-        // Proprietatea OperationString
         public string OperationString
         {
             get => _operationString;
@@ -71,11 +70,9 @@ namespace Calculator
 
         public Standard()
         {
-            // Inițializăm comenzile
             SwitchToStandardCommand = new RelayCommand(SwitchToStandard);
             SwitchToProgrammerCommand = new RelayCommand(SwitchToProgrammer);
             ToggleMenuCommand = new RelayCommand(ToggleMenu);
-
             MemoryClearCommand = new RelayCommand(MemoryClear);
             MemoryRecallCommand = new RelayCommand(MemoryRecall);
             MemoryAddCommand = new RelayCommand(MemoryAdd);
@@ -91,15 +88,25 @@ namespace Calculator
             ReciprocalCommand = new RelayCommand(Reciprocal);
             SquareCommand = new RelayCommand(Square);
             SquareRootCommand = new RelayCommand(SquareRoot);
+            CutCommand = new RelayCommand(Cut);
+            CopyCommand = new RelayCommand(Copy);
+            PasteCommand = new RelayCommand(Paste);
+            AboutCommand = new RelayCommand(About);
+
+            DigitGroupingEnabled = Settings.Default.DigitGroupingEnabled;
         }
 
-        // Metoda pentru notificarea schimbării proprietății
+        public void SaveSettings()
+        {
+            Settings.Default.DigitGroupingEnabled = DigitGroupingEnabled;
+            Settings.Default.Save();
+        }
+
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        // Metode pentru comenzile meniului lateral
         private void SwitchToStandard(object parameter)
         {
             var mainWindow = new MainWindow();
@@ -122,7 +129,53 @@ namespace Calculator
             }
         }
 
-        // Metode pentru comenzile calculatorului
+        private void Cut(object parameter)
+        {
+            Clipboard.SetText(CurrentValue.ToString());
+            CurrentValue = 0;
+        }
+
+        private void Copy(object parameter)
+        {
+            Clipboard.SetText(CurrentValue.ToString());
+        }
+
+        private void Paste(object parameter)
+        {
+            if (Clipboard.ContainsText())
+            {
+                string text = Clipboard.GetText();
+                if (double.TryParse(text, out double value))
+                {
+                    CurrentValue = value;
+                }
+            }
+        }
+
+        private bool _digitGroupingEnabled = false;
+        public bool DigitGroupingEnabled
+        {
+            get => _digitGroupingEnabled;
+            set
+            {
+                _digitGroupingEnabled = value;
+                OnPropertyChanged(nameof(DigitGroupingEnabled));
+                OnPropertyChanged(nameof(CurrentValueDisplay));
+            }
+        }
+
+        public string CurrentValueDisplay => DigitGroupingEnabled ? FormatWithDigitGrouping(CurrentValue) : CurrentValue.ToString();
+
+        private string FormatWithDigitGrouping(double value)
+        {
+            return value.ToString("N", CultureInfo.CurrentCulture);
+        }
+
+        private void About(object parameter)
+        {
+            MessageBox.Show("Nume: Pleșu Iulia\nGrupă: 10LF233", "About");
+        }
+
         private void MemoryClear(object parameter) => _memory = 0;
         private void MemoryRecall(object parameter) => CurrentValue = _memory;
         private void MemoryAdd(object parameter) => _memory += CurrentValue;
@@ -142,7 +195,7 @@ namespace Calculator
                 {
                     CurrentValue = double.Parse(CurrentValue.ToString() + number);
                 }
-                OperationString += number; // Adăugăm cifra la operație
+                OperationString += number;
             }
         }
 
@@ -154,12 +207,12 @@ namespace Calculator
                 {
                     if (!string.IsNullOrEmpty(_currentOperation))
                     {
-                        Calculate(null); // Calculează rezultatul intermediar
+                        Calculate(null);
                     }
                     _firstOperand = CurrentValue;
                     _currentOperation = operation;
                     _isNewNumber = true;
-                    OperationString += $" {operation} "; // Adăugăm operatorul la operație
+                    OperationString += $" {operation} ";
                 }
             }
         }
@@ -191,17 +244,18 @@ namespace Calculator
                 _firstOperand = result;
                 _currentOperation = string.Empty;
                 _isNewNumber = true;
-                OperationString += $" = {result}"; // Adăugăm rezultatul final la operație
+                OperationString += $" = {result}";
             }
         }
 
         private void ChangeSign(object parameter) => CurrentValue = -CurrentValue;
+
         private void AddDecimalPoint(object parameter)
         {
             if (!CurrentValue.ToString().Contains("."))
             {
                 CurrentValue = double.Parse(CurrentValue.ToString() + ".");
-                OperationString += "."; // Adăugăm punctul zecimal la operație
+                OperationString += ".";
             }
         }
 
@@ -210,7 +264,7 @@ namespace Calculator
             CurrentValue = 0;
             _firstOperand = 0;
             _currentOperation = string.Empty;
-            OperationString = string.Empty; // Resetăm operația
+            OperationString = string.Empty;
             _isNewNumber = true;
         }
 
@@ -219,12 +273,12 @@ namespace Calculator
             if (CurrentValue.ToString().Length > 1)
             {
                 CurrentValue = double.Parse(CurrentValue.ToString().Substring(0, CurrentValue.ToString().Length - 1));
-                OperationString = OperationString.Substring(0, OperationString.Length - 1); // Ștergem ultimul caracter din operație
+                OperationString = OperationString.Substring(0, OperationString.Length - 1);
             }
             else
             {
                 CurrentValue = 0;
-                OperationString = string.Empty; // Resetăm operația dacă nu mai sunt cifre
+                OperationString = string.Empty;
             }
         }
 
@@ -232,12 +286,10 @@ namespace Calculator
         private void Square(object parameter) => CurrentValue *= CurrentValue;
         private void SquareRoot(object parameter) => CurrentValue = Math.Sqrt(CurrentValue);
 
-        // Implementarea ICommand
         public bool CanExecute(object parameter) => true;
         public void Execute(object parameter) => throw new NotImplementedException();
     }
 
-    // Implementare simplă a RelayCommand
     public class RelayCommand : ICommand
     {
         private readonly Action<object> _execute;

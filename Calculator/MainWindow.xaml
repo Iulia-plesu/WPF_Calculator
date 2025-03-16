@@ -34,15 +34,28 @@
         </Style>
     </Window.Resources>
 
+    
     <Grid Background="#2D2D30">
         <!-- Meniul lateral -->
         <Border x:Name="SideMenu" Width="150" Background="#1E1E1E" HorizontalAlignment="Left" Margin="-150,0,0,0" Panel.ZIndex="1">
             <StackPanel>
                 <Button Content="Standard" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToStandardCommand}"/>
                 <Button Content="Programmer" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToProgrammerCommand}"/>
+                <Menu >
+                    <MenuItem Header="File" >
+                        <MenuItem Header="Cut"  Command="{Binding CutCommand}"/>
+                        <MenuItem Header="Copy" Command="{Binding CopyCommand}"/>
+                        <MenuItem Header="Paste" Command="{Binding PasteCommand}"/>
+                    </MenuItem>
+                </Menu>
+                <Menu>
+                    <MenuItem Header="Help">
+                        <MenuItem Header="About" Command="{Binding AbboutCommand}"/>
+                    </MenuItem>
+                </Menu>
             </StackPanel>
         </Border>
-
+        
         <!-- Bara de sus -->
         <DockPanel LastChildFill="True" VerticalAlignment="Top" Height="40">
             <Button Content="☰" FontSize="16" Foreground="Black" Margin="10,0,0,0" VerticalAlignment="Center" Command="{Binding ToggleMenuCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
