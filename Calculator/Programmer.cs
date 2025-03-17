@@ -127,13 +127,12 @@ namespace Calculator
 
         private void SwitchToStandard(object parameter)
         {
-            Settings.Default.CalculatorMode = "Standard"; // Salvează modul Standard
-            Settings.Default.Save(); // Salvează setările
+            Settings.Default.CalculatorMode = "Standard"; 
+            Settings.Default.Save();
 
             var mainWindow = new MainWindow();
             mainWindow.Show();
 
-            // Închide fereastra curentă după ce fereastra nouă a fost afișată
             if (parameter is Window currentWindow)
             {
                 currentWindow.Close();
@@ -142,13 +141,12 @@ namespace Calculator
 
         private void SwitchToProgrammer(object parameter)
         {
-            Settings.Default.CalculatorMode = "Programmer"; // Salvează modul Programmer
-            Settings.Default.Save(); // Salvează setările
+            Settings.Default.CalculatorMode = "Programmer"; 
+            Settings.Default.Save(); 
 
             var programmerWindow = new ProgrammerWindow();
             programmerWindow.Show();
 
-            // Închide fereastra curentă după ce fereastra nouă a fost afișată
             if (parameter is Window currentWindow)
             {
                 currentWindow.Close();
@@ -321,21 +319,6 @@ namespace Calculator
             }
         }
 
-        private double ConvertToDecimal(string number, string fromBase)
-        {
-            if (number.Contains("."))
-            {
-                string[] parts = number.Split('.');
-                double integerPart = Convert.ToInt32(parts[0], GetBase(fromBase));
-                double fractionalPart = ConvertFractionalPart(parts[1], fromBase);
-                return integerPart + fractionalPart;
-            }
-            else
-            {
-                return Convert.ToInt32(number, GetBase(fromBase));
-            }
-        }
-
         private double ConvertFractionalPart(string fractionalPart, string fromBase)
         {
             double result = 0;
@@ -481,7 +464,7 @@ namespace Calculator
 
         private void About(object parameter)
         {
-            MessageBox.Show("Nume: Pleșu Iulia\nGrupă: 10LF233", "About");
+            MessageBox.Show("Nume: Iulia\nGrupă: 233", "About");
         }
     }
 }

@@ -95,26 +95,29 @@
 
         <StackPanel Orientation="Vertical" Margin="10,40,10,0" VerticalAlignment="Top">
             <TextBox Name="OperationDisplay" 
-         FontSize="14" 
-         Foreground="White" 
-         Background="#1E1E1E" 
-         BorderThickness="0" 
-         TextAlignment="Right" 
-         IsReadOnly="True" 
-         Margin="10,5,10,5" 
-         Text="{Binding OperationString, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
-            <TextBox Name="Display" 
-         FontSize="24" 
-         Foreground="White" 
-         Background="#1E1E1E" 
-         BorderThickness="0" 
-         TextAlignment="Right"
-         VerticalAlignment="Top" 
-         Margin="10,-5,10,10" 
-         Height="50" 
-         IsReadOnly="True" 
-         VerticalContentAlignment="Center" 
-         Text="{Binding CurrentValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                 FontSize="14" 
+                 Foreground="White" 
+                 Background="#2D2D30" 
+                 BorderThickness="0" 
+                 TextAlignment="Right" 
+                 IsReadOnly="True" 
+                 Margin="10,5,10,5" 
+                 Text="{Binding OperationString, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <ItemsControl ItemsSource="{Binding CurrentValueDisplay}" Grid.Row="1" Margin="0, 0, 10, 0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" 
+                           FontSize="24" 
+                           Foreground="White"
+                           Margin="1,0,1,0"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </StackPanel>
 
         <Border Background="#333" CornerRadius="10" Margin="10,120,10,10" Padding="0">

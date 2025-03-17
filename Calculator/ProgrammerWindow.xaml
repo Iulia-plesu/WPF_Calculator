@@ -82,15 +82,12 @@
     </Window.Resources>
 
     <Grid Background="#2D2D30">
-        <!-- Meniul lateral -->
         <Border x:Name="SideMenu" Width="150" Background="#1E1E1E" HorizontalAlignment="Left" Margin="-150,0,0,0" Panel.ZIndex="1"
         MouseEnter="SideMenu_MouseEnter" MouseLeave="SideMenu_MouseLeave">
             <StackPanel>
-                <!-- Butoane din meniu lateral -->
                 <Button Content="Standard" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToStandardCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
                 <Button Content="Programmer" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToProgrammerCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
 
-                <!-- Meniu File -->
                 <Menu Style="{StaticResource MenuStyle}">
                     <MenuItem Header="File" Style="{StaticResource MenuItemStyle}">
                         <MenuItem Header="Cut" Command="{Binding CutCommand}" Style="{StaticResource MenuItemStyle}"/>
@@ -99,7 +96,6 @@
                     </MenuItem>
                 </Menu>
 
-                <!-- Meniu Help -->
                 <Menu Style="{StaticResource MenuStyle}">
                     <MenuItem Header="Help" Style="{StaticResource MenuItemStyle}">
                         <MenuItem Header="About" Command="{Binding AboutCommand}" Style="{StaticResource MenuItemStyle}"/>
@@ -107,7 +103,6 @@
                 </Menu>
             </StackPanel>
         </Border>
-        <!-- Bara de sus -->
         <DockPanel LastChildFill="True" VerticalAlignment="Top" Height="40">
             <Button Content="☰" FontSize="16" Foreground="Black" Margin="10,0,0,0" VerticalAlignment="Center" Command="{Binding ToggleMenuCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
             <TextBlock Text="Programmer" FontSize="14" Foreground="White" FontWeight="Bold" Margin="10,0,0,0" VerticalAlignment="Center"/>
@@ -115,28 +110,30 @@
 
         <StackPanel Orientation="Vertical" Margin="10,40,10,0" VerticalAlignment="Top">
             <TextBox Name="OperationDisplay" 
-         FontSize="14" 
-         Foreground="White" 
-         Background="#1E1E1E" 
-         BorderThickness="0" 
-         TextAlignment="Right" 
-         IsReadOnly="True" 
-         Margin="10,5,10,0" 
-         Text="{Binding OperationString, Mode=OneWay}"/>
-            <TextBox Name="Display" 
-         FontSize="30" 
-         Foreground="White" 
-         Background="#1E1E1E" 
-         BorderThickness="0" 
-         TextAlignment="Right"  
-         VerticalAlignment="Top" 
-         Margin="10,0,10,10" 
-         Height="50" 
-         IsReadOnly="True" 
-         VerticalContentAlignment="Center" 
-         Text="{Binding CurrentValueDisplay, Mode=OneWay}"/>
+                 FontSize="14" 
+                 Foreground="White" 
+                 Background="#2D2D30" 
+                 BorderThickness="0" 
+                 TextAlignment="Right" 
+                 IsReadOnly="True" 
+                 Margin="10,5,10,5" 
+                 Text="{Binding OperationString, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <ItemsControl ItemsSource="{Binding CurrentValueDisplay}" Grid.Row="1" Margin="0, 0, 10, 0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" 
+                   FontSize="24" 
+                   Foreground="White"
+                   Margin="1,0,1,0"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </StackPanel>
-
 
         <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="20,115,10,10" VerticalAlignment="Top">
             <Button x:Name="HEX" Content="HEX" Width="30" Style="{StaticResource BaseButtonStyle}" Click="BaseButton_Click"/>

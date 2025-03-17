@@ -27,12 +27,10 @@ namespace Calculator
                 this.DataContext = new Standard();
             }
 
-            // Inițializează timer-ul
             _closeMenuTimer = new DispatcherTimer();
-            _closeMenuTimer.Interval = TimeSpan.FromMilliseconds(200); // Intervalul în care se va închide meniul
+            _closeMenuTimer.Interval = TimeSpan.FromMilliseconds(200);
             _closeMenuTimer.Tick += CloseMenuTimer_Tick;
 
-            // Abonare la evenimentele de mouse
             SideMenu.MouseEnter += SideMenu_MouseEnter;
             SideMenu.MouseLeave += SideMenu_MouseLeave;
         }
@@ -53,28 +51,23 @@ namespace Calculator
         {
             if (!_isMouseOverMenu)
             {
-                // Închide meniul doar dacă mouse-ul nu se află peste el
-                SideMenu.Margin = new Thickness(-150, 0, 0, 0); // Ascunde meniul lateral
+                SideMenu.Margin = new Thickness(-150, 0, 0, 0); 
                 _closeMenuTimer.Stop();
             }
         }
 
-        // Funcția care va comuta meniul lateral
         private void ToggleMenu()
         {
             if (SideMenu.Margin.Left == 0)
             {
-                // Dacă meniul este deschis, îl închidem
                 SideMenu.Margin = new Thickness(-150, 0, 0, 0);
             }
             else
             {
-                // Dacă meniul este închis, îl deschidem
                 SideMenu.Margin = new Thickness(0, 0, 0, 0);
             }
         }
 
-        // Metoda pentru a deschide/închide meniul cu ajutorul butonului
         private void MenuButton_Click(object sender, RoutedEventArgs e)
         {
             ToggleMenu();
@@ -117,18 +110,14 @@ namespace Calculator
                 case Key.OemMinus: case Key.Subtract: standard.SetOperationCommand.Execute("-"); break;
                 case Key.Multiply: standard.SetOperationCommand.Execute("×"); break;
                 case Key.Divide: case Key.OemQuestion: standard.SetOperationCommand.Execute("÷"); break;
-                case Key.Oem5: standard.SetOperationCommand.Execute("%"); break; // Tasta "%" pe anumite tastaturi
+                case Key.Oem5: standard.SetOperationCommand.Execute("%"); break; 
 
-                // Enter pentru calcul
                 case Key.Enter: standard.CalculateCommand.Execute(null); break;
 
-                // Backspace pentru ștergere caracter
                 case Key.Back: standard.BackspaceCommand.Execute(null); break;
 
-                // Escape pentru resetare calculator
                 case Key.Escape: standard.ClearCommand.Execute(null); break;
 
-                // Comenzi rapide: Ctrl+C, Ctrl+V, Ctrl+X
                 case Key.C when (e.KeyboardDevice.Modifiers == ModifierKeys.Control):
                     standard.CopyCommand.Execute(null);
                     break;

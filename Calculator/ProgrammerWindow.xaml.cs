@@ -107,7 +107,7 @@ namespace Calculator
         {
             if (sender is Button button)
             {
-                _programmer.HandleButtonClick(button.Content.ToString());
+                //_programmer.HandleButtonClick(button.Content.ToString());
             }
         }
 
