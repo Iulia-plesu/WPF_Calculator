@@ -67,6 +67,7 @@
             <StackPanel>
                 <Button Content="Standard" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToStandardCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
                 <Button Content="Programmer" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToProgrammerCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+                <Button Content="Expression" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToExpressionCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
 
                 <Menu Style="{StaticResource MenuStyle}">
                     <MenuItem Header="File" Style="{StaticResource MenuItemStyle}">

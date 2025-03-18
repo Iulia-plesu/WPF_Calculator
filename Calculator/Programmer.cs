@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -12,6 +14,7 @@ namespace Calculator
 
         public ICommand SwitchToStandardCommand { get; }
         public ICommand SwitchToProgrammerCommand { get; }
+        public ICommand SwitchToExpressionCommand { get; }
         public ICommand ToggleMenuCommand { get; }
         public ICommand MemoryClearCommand { get; }
         public ICommand MemoryRecallCommand { get; }
@@ -46,39 +49,6 @@ namespace Calculator
         public string OctDisplay => ConvertFromDecimal(CurrentValue, "OCT");
         public string BinDisplay => ConvertFromDecimal(CurrentValue, "BIN");
 
-        public double CurrentValue
-        {
-            get => _currentValue;
-            set
-            {
-                if (_currentValue != value)
-                {
-                    _currentValue = value;
-                    OnPropertyChanged(nameof(CurrentValue));
-                    OnPropertyChanged(nameof(CurrentValueDisplay));
-                    OnPropertyChanged(nameof(HexDisplay));
-                    OnPropertyChanged(nameof(DecDisplay));
-                    OnPropertyChanged(nameof(OctDisplay));
-                    OnPropertyChanged(nameof(BinDisplay));
-                }
-            }
-        }
-
-        public string CurrentValueDisplay => ConvertFromDecimal(_currentValue, CurrentBase);
-
-        public string OperationString
-        {
-            get => _operationString;
-            set
-            {
-                if (_operationString != value)
-                {
-                    _operationString = value;
-                    OnPropertyChanged(nameof(OperationString));
-                }
-            }
-        }
-
         public string CurrentBase
         {
             get => _currentBase;
@@ -88,16 +58,18 @@ namespace Calculator
                 {
                     _currentBase = value;
                     OnPropertyChanged(nameof(CurrentBase));
-                    OnPropertyChanged(nameof(CurrentValueDisplay));
-                    Clear(null);
+                    OnPropertyChanged(nameof(CurrentValueDisplay));  
+                    Clear(null);  
                 }
             }
         }
+
 
         public Programmer()
         {
             SwitchToStandardCommand = new RelayCommand(SwitchToStandard);
             SwitchToProgrammerCommand = new RelayCommand(SwitchToProgrammer);
+            SwitchToExpressionCommand = new RelayCommand(SwitchToExpression);
             ToggleMenuCommand = new RelayCommand(ToggleMenu);
             MemoryClearCommand = new RelayCommand(MemoryClear);
             MemoryRecallCommand = new RelayCommand(MemoryRecall);
@@ -118,13 +90,99 @@ namespace Calculator
             CopyCommand = new RelayCommand(Copy);
             PasteCommand = new RelayCommand(Paste);
             AboutCommand = new RelayCommand(About);
+
+            CultureInfo.CurrentCulture = new CultureInfo("en-GB");
+        }
+
+        public double CurrentValue
+        {
+            get => _currentValue;
+            set
+            {
+                _currentValue = value;
+                OnPropertyChanged(nameof(CurrentValue));
+                OnPropertyChanged(nameof(CurrentValueDisplay));
+
+                OnPropertyChanged(nameof(HexDisplay));
+                OnPropertyChanged(nameof(DecDisplay));
+                OnPropertyChanged(nameof(OctDisplay));
+                OnPropertyChanged(nameof(BinDisplay));
+            }
+        }
+
+        public string CurrentValueDisplay
+        {
+            get
+            {
+                return ConvertFromDecimal(CurrentValue, CurrentBase);
+            }
+        }
+
+
+
+        public string OperationString
+        {
+            get => _operationString;
+            set
+            {
+                _operationString = value;
+                OnPropertyChanged(nameof(OperationString));
+            }
+        }
+
+        private void AppendNumber(object parameter)
+        {
+            if (parameter is string number)
+            {
+                if (_isNewNumber)
+                {
+                    CurrentValue = 0;
+                    _isNewNumber = false;
+                }
+
+                if (!IsValidInput(number))
+                {
+                    return; 
+                }
+
+                //string currentValueStr = CurrentValue.ToString(CultureInfo.InvariantCulture).Replace(",", "").Replace(".", "") + number;
+                string currentValueStr = ConvertFromDecimal(CurrentValue, CurrentBase) + number;
+
+                CurrentValue = ParseNumber(currentValueStr, CurrentBase);
+
+                OperationString = FormatOperationStringWithDigitGrouping(OperationString + number);
+                OnPropertyChanged(nameof(CurrentValueDisplay));
+            }
         }
 
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+        private string FormatWithDigitGrouping(double value)
+        {
+            return value.ToString("N0", CultureInfo.CurrentCulture);
+        }
 
+        private string FormatOperationStringWithDigitGrouping(string operationString)
+        {
+            var parts = operationString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var formattedParts = new List<string>();
+
+            foreach (var part in parts)
+            {
+                if (double.TryParse(part, out double number))
+                {
+                    formattedParts.Add(FormatWithDigitGrouping(number));
+                }
+                else
+                {
+                    formattedParts.Add(part);
+                }
+            }
+
+            return string.Join(" ", formattedParts);
+        }
         private void SwitchToStandard(object parameter)
         {
             Settings.Default.CalculatorMode = "Standard"; 
@@ -151,6 +209,13 @@ namespace Calculator
             {
                 currentWindow.Close();
             }
+        }
+        private void SwitchToExpression(object parameter)
+        {
+
+            var expressionWindow = new ExpressionWindow();
+            expressionWindow.Show();
+
         }
         private void ToggleMenu(object parameter)
         {
@@ -189,27 +254,6 @@ namespace Calculator
         private void MemorySubtract(object parameter) => _memory -= CurrentValue;
         private void MemoryStore(object parameter) => _memory = CurrentValue;
 
-        private void AppendNumber(object parameter)
-        {
-            if (parameter is string number)
-            {
-                if (!IsValidInput(number))
-                    return;
-
-                if (_isNewNumber)
-                {
-                    CurrentValue = ParseNumber(number, CurrentBase);
-                    _isNewNumber = false;
-                }
-                else
-                {
-                    string currentValueStr = ConvertFromDecimal(CurrentValue, CurrentBase);
-                    currentValueStr += number;
-                    CurrentValue = ParseNumber(currentValueStr, CurrentBase);
-                }
-                OperationString += number;
-            }
-        }
 
         private void SetOperation(object parameter)
         {
@@ -265,6 +309,7 @@ namespace Calculator
         private void AddDecimalPoint(object parameter)
         {
             string currentValueStr = ConvertFromDecimal(CurrentValue, CurrentBase);
+
             if (!currentValueStr.Contains("."))
             {
                 currentValueStr += ".";
@@ -272,6 +317,7 @@ namespace Calculator
                 OperationString += ".";
             }
         }
+
 
         private void Clear(object parameter)
         {
@@ -298,6 +344,7 @@ namespace Calculator
             }
         }
 
+
         private void Reciprocal(object parameter) => CurrentValue = 1 / CurrentValue;
         private void Square(object parameter) => CurrentValue *= CurrentValue;
         private void SquareRoot(object parameter) => CurrentValue = Math.Sqrt(CurrentValue);
@@ -307,51 +354,58 @@ namespace Calculator
             switch (CurrentBase)
             {
                 case "BIN":
-                    return input == "0" || input == "1" || input == ".";
+                    return "01".Contains(input) || input == ".";
                 case "OCT":
-                    return int.TryParse(input, out int oct) && oct >= 0 && oct <= 7 || input == ".";
+                    return "01234567".Contains(input) || input == ".";  
                 case "DEC":
-                    return int.TryParse(input, out int dec) || input == ".";
+                    return "0123456789".Contains(input) || input == "."; 
                 case "HEX":
-                    return int.TryParse(input, out int hex) || (input.Length == 1 && "ABCDEF.".Contains(input.ToUpper()));
+                    return "0123456789ABCDEF".Contains(input.ToUpper()) || input == "."; 
                 default:
                     return false;
             }
         }
 
+
+
+
         private double ConvertFractionalPart(string fractionalPart, string fromBase)
         {
             double result = 0;
             int baseValue = GetBase(fromBase);
+
             for (int i = 0; i < fractionalPart.Length; i++)
             {
                 int digit = Convert.ToInt32(fractionalPart[i].ToString(), baseValue);
                 result += digit / Math.Pow(baseValue, i + 1);
             }
+
             return result;
         }
+
 
         private string ConvertFromDecimal(double number, string toBase)
         {
             if (toBase == "DEC")
             {
-                return number.ToString();
+                return number.ToString(); 
             }
 
             int integerPart = (int)number;
             double fractionalPart = number - integerPart;
 
-            string integerResult = Convert.ToString(integerPart, GetBase(toBase));
-            string fractionalResult = ConvertFractionalPartToBase(fractionalPart, toBase);
+            string integerResult = Convert.ToString(integerPart, GetBase(toBase)); 
+            string fractionalResult = ConvertFractionalPartToBase(fractionalPart, toBase); 
 
             if (toBase == "HEX")
             {
-                integerResult = integerResult.ToUpper();
+                integerResult = integerResult.ToUpper(); 
                 fractionalResult = fractionalResult.ToUpper();
             }
 
             return fractionalResult == "" ? integerResult : $"{integerResult}.{fractionalResult}";
         }
+
 
         private string ConvertFractionalPartToBase(double fractionalPart, string toBase)
         {
@@ -360,7 +414,7 @@ namespace Calculator
 
             int baseValue = GetBase(toBase);
             string result = "";
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 10; i++)  
             {
                 fractionalPart *= baseValue;
                 int digit = (int)fractionalPart;
@@ -371,6 +425,7 @@ namespace Calculator
             }
             return result;
         }
+
 
         private int GetBase(string baseName)
         {
@@ -391,18 +446,72 @@ namespace Calculator
 
         private double ParseNumber(string number, string fromBase)
         {
+            int baseValue = GetBase(fromBase);
+
             if (number.Contains("."))
             {
                 string[] parts = number.Split('.');
-                double integerPart = Convert.ToInt32(parts[0], GetBase(fromBase));
-                double fractionalPart = ConvertFractionalPart(parts[1], fromBase);
+
+                double integerPart = ConvertIntegerPart(parts[0], baseValue);
+
+                double fractionalPart = ConvertFractionalPart(parts[1], baseValue);
+
                 return integerPart + fractionalPart;
             }
             else
             {
-                return Convert.ToInt32(number, GetBase(fromBase));
+                return ConvertIntegerPart(number, baseValue);
             }
         }
+
+        private double ConvertIntegerPart(string integerPart, int baseValue)
+        {
+            double result = 0;
+            int length = integerPart.Length;
+
+            for (int i = 0; i < length; i++)
+            {
+                char digitChar = integerPart[i];
+                int digitValue = GetDigitValue(digitChar);
+
+                result += digitValue * Math.Pow(baseValue, length - 1 - i);
+            }
+
+            return result;
+        }
+
+        private double ConvertFractionalPart(string fractionalPart, int baseValue)
+        {
+            double result = 0;
+
+            for (int i = 0; i < fractionalPart.Length; i++)
+            {
+                char digitChar = fractionalPart[i];
+                int digitValue = GetDigitValue(digitChar);
+
+                result += digitValue * Math.Pow(baseValue, -(i + 1));
+            }
+
+            return result;
+        }
+
+        private int GetDigitValue(char digitChar)
+        {
+            if (char.IsDigit(digitChar))
+            {
+                return digitChar - '0';
+            }
+            else if (char.IsLetter(digitChar))
+            {
+                return char.ToUpper(digitChar) - 'A' + 10;
+            }
+            else
+            {
+                throw new FormatException($"Invalid character '{digitChar}' in number.");
+            }
+        }
+
+
 
         public void HandleButtonClick(string buttonContent)
         {

@@ -24,6 +24,7 @@ namespace Calculator
 
         public ICommand SwitchToStandardCommand { get; }
         public ICommand SwitchToProgrammerCommand { get; }
+        public ICommand SwitchToExpressionCommand { get; }
         public ICommand ToggleMenuCommand { get; }
         public ICommand MemoryClearCommand { get; }
         public ICommand MemoryRecallCommand { get; }
@@ -114,6 +115,7 @@ namespace Calculator
             AboutCommand = new RelayCommand(About);
             PercentageCommand = new RelayCommand(CalculatePercentage);
             MemoryStackCommand = new RelayCommand(MemoryStack);
+            SwitchToExpressionCommand = new RelayCommand(SwitchToExpression);
         }
 
         private void AppendNumber(object parameter)
@@ -199,6 +201,13 @@ namespace Calculator
             {
                 currentWindow.Close();
             }
+        }
+        private void SwitchToExpression(object parameter)
+        {
+
+            var expressionWindow = new ExpressionWindow();
+            expressionWindow.Show();
+
         }
 
         private void ToggleMenu(object parameter)

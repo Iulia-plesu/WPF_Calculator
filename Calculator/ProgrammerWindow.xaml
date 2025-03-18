@@ -87,6 +87,7 @@
             <StackPanel>
                 <Button Content="Standard" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToStandardCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
                 <Button Content="Programmer" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToProgrammerCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+                <Button Content="Expression" Style="{StaticResource MenuButtonStyle}" Command="{Binding SwitchToExpressionCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
 
                 <Menu Style="{StaticResource MenuStyle}">
                     <MenuItem Header="File" Style="{StaticResource MenuItemStyle}">
@@ -127,11 +128,12 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding}" 
-                   FontSize="24" 
-                   Foreground="White"
-                   Margin="1,0,1,0"/>
+                           FontSize="24" 
+                           Foreground="White"
+                           Margin="1,0,1,0"/>   
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
+            
             </ItemsControl>
         </StackPanel>
 
@@ -188,41 +190,41 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Content="A" Grid.Row="0" Grid.Column="0" Background="#666" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="&lt;&lt;" Grid.Row="0" Grid.Column="1" Background="#666" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content=">>" Grid.Row="0" Grid.Column="2" Background="#666" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="CE" Grid.Row="0" Grid.Column="3" Background="#666" Foreground="White" FontSize="12" Click="Button_Click"/>
-                <Button Content="⌫" Grid.Row="0" Grid.Column="4" Background="#666" Foreground="White" FontSize="12"/>
+                <Button Content="A" Grid.Row="0" Grid.Column="0" Background="#666" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="A"/>
+                <Button Content="&lt;&lt;" Grid.Row="0" Grid.Column="1" Background="#666" Foreground="White" FontSize="14" Command="{Binding BackspaceCommand}"/>
+                <Button Content=">>" Grid.Row="0" Grid.Column="2" Background="#666" Foreground="White" FontSize="14" Command="{Binding BackspaceCommand}"/>
+                <Button Content="CE" Grid.Row="0" Grid.Column="3" Background="#666" Foreground="White" FontSize="12" Command="{Binding ClearCommand}"/>
+                <Button Content="⌫" Grid.Row="0" Grid.Column="4" Background="#666" Foreground="White" FontSize="12" Command="{Binding BackspaceCommand}"/>
 
-                <Button Content="B" Grid.Row="1" Grid.Column="0" Background="#666" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="(" Grid.Row="1" Grid.Column="1" Background="#666" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content=")" Grid.Row="1" Grid.Column="2" Background="#666" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="%" Grid.Row="1" Grid.Column="3" Background="#666" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="÷" Grid.Row="1" Grid.Column="4" Background="#666" Foreground="White" FontSize="16" Click="Button_Click"/>
+                <Button Content="B" Grid.Row="1" Grid.Column="0" Background="#666" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="B"/>
+                <Button Content="(" Grid.Row="1" Grid.Column="1" Background="#666" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="("/>
+                <Button Content=")" Grid.Row="1" Grid.Column="2" Background="#666" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter=")"/>
+                <Button Content="%" Grid.Row="1" Grid.Column="3" Background="#666" Foreground="White" FontSize="14" Command="{Binding SetOperationCommand}" CommandParameter="%"/>
+                <Button Content="÷" Grid.Row="1" Grid.Column="4" Background="#666" Foreground="White" FontSize="16" Command="{Binding SetOperationCommand}" CommandParameter="÷"/>
 
-                <Button Content="C" Grid.Row="2" Grid.Column="0" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="7" Grid.Row="2" Grid.Column="1" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="8" Grid.Row="2" Grid.Column="2" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="9" Grid.Row="2" Grid.Column="3" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="×" Grid.Row="2" Grid.Column="4" Background="#666" Foreground="White" FontSize="14" Click="Button_Click"/>
+                <Button Content="C" Grid.Row="2" Grid.Column="0" Background="#444" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="C"/>
+                <Button Content="7" Grid.Row="2" Grid.Column="1" Background="#444" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="7"/>
+                <Button Content="8" Grid.Row="2" Grid.Column="2" Background="#444" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="8"/>
+                <Button Content="9" Grid.Row="2" Grid.Column="3" Background="#444" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="9"/>
+                <Button Content="×" Grid.Row="2" Grid.Column="4" Background="#666" Foreground="White" FontSize="14" Command="{Binding SetOperationCommand}" CommandParameter="×"/>
 
-                <Button Content="D" Grid.Row="3" Grid.Column="0" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="4" Grid.Row="3" Grid.Column="1" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="5" Grid.Row="3" Grid.Column="2" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="6" Grid.Row="3" Grid.Column="3" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="-" Grid.Row="3" Grid.Column="4" Background="#666" Foreground="White" FontSize="18" Click="Button_Click"/>
+                <Button Content="D" Grid.Row="3" Grid.Column="0" Background="#444" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="D"/>
+                <Button Content="4" Grid.Row="3" Grid.Column="1" Background="#444" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="4"/>
+                <Button Content="5" Grid.Row="3" Grid.Column="2" Background="#444" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="5"/>
+                <Button Content="6" Grid.Row="3" Grid.Column="3" Background="#444" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="6"/>
+                <Button Content="-" Grid.Row="3" Grid.Column="4" Background="#666" Foreground="White" FontSize="18" Command="{Binding SetOperationCommand}" CommandParameter="-"/>
 
-                <Button Content="E" Grid.Row="4" Grid.Column="0" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="1" Grid.Row="4" Grid.Column="1" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="2" Grid.Row="4" Grid.Column="2" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="3" Grid.Row="4" Grid.Column="3" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="+" Grid.Row="4" Grid.Column="4" Background="#666" Foreground="White" FontSize="16" Click="Button_Click"/>
+                <Button Content="E" Grid.Row="4" Grid.Column="0" Background="#444" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="E"/>
+                <Button Content="1" Grid.Row="4" Grid.Column="1" Background="#444" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="1"/>
+                <Button Content="2" Grid.Row="4" Grid.Column="2" Background="#444" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="2"/>
+                <Button Content="3" Grid.Row="4" Grid.Column="3" Background="#444" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="3"/>
+                <Button Content="+" Grid.Row="4" Grid.Column="4" Background="#666" Foreground="White" FontSize="16" Command="{Binding SetOperationCommand}" CommandParameter="+"/>
 
-                <Button Content="F" Grid.Row="5" Grid.Column="0" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="±" Grid.Row="5" Grid.Column="1" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="0" Grid.Row="5" Grid.Column="2" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="." Grid.Row="5" Grid.Column="3" Background="#444" Foreground="White" FontSize="14" Click="Button_Click"/>
-                <Button Content="=" Grid.Row="5" Grid.Column="4" Background="#A084E8" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Click="Button_Click"/>
+                <Button Content="F" Grid.Row="5" Grid.Column="0" Background="#444" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="F"/>
+                <Button Content="±" Grid.Row="5" Grid.Column="1" Background="#444" Foreground="White" FontSize="14" Command="{Binding ChangeSignCommand}"/>
+                <Button Content="0" Grid.Row="5" Grid.Column="2" Background="#444" Foreground="White" FontSize="14" Command="{Binding AppendNumberCommand}" CommandParameter="0"/>
+                <Button Content="." Grid.Row="5" Grid.Column="3" Background="#444" Foreground="White" FontSize="14" Command="{Binding AddDecimalPointCommand}"/>
+                <Button Content="=" Grid.Row="5" Grid.Column="4" Background="#A084E8" Foreground="White" FontSize="18" BorderBrush="Transparent" BorderThickness="0" Padding="10" Command="{Binding CalculateCommand}"/>
             </Grid>
         </Border>
     </Grid>
