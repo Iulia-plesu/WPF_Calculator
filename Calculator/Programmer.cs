@@ -11,7 +11,7 @@ namespace Calculator
     public class Programmer : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-
+        private List<double> _memoryStack = new List<double>();
         public ICommand SwitchToStandardCommand { get; }
         public ICommand SwitchToProgrammerCommand { get; }
         public ICommand SwitchToExpressionCommand { get; }
@@ -35,6 +35,8 @@ namespace Calculator
         public ICommand CopyCommand { get; }
         public ICommand PasteCommand { get; }
         public ICommand AboutCommand { get; }
+
+        public ICommand MemoryStackCommand { get; }
 
         private double _memory = 0;
         private double _currentValue = 0;
@@ -90,6 +92,7 @@ namespace Calculator
             CopyCommand = new RelayCommand(Copy);
             PasteCommand = new RelayCommand(Paste);
             AboutCommand = new RelayCommand(About);
+            MemoryStackCommand = new RelayCommand(MemoryStack);
 
             CultureInfo.CurrentCulture = new CultureInfo("en-GB");
         }
@@ -247,14 +250,73 @@ namespace Calculator
                 }
             }
         }
+        private void MemoryClear() => _memory = 0;
 
-        private void MemoryClear(object parameter) => _memory = 0;
-        private void MemoryRecall(object parameter) => CurrentValue = _memory;
-        private void MemoryAdd(object parameter) => _memory += CurrentValue;
+        private void MemoryRecall(object parameter)
+        {
+            if (_memoryStack.Count == 0)
+            {
+                MessageBox.Show("Stiva de memorie este goală.", "Eroare", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var selectionWindow = new MemorySelectionWindow(_memoryStack);
+            if (selectionWindow.ShowDialog() == true)
+            {
+                if (string.IsNullOrEmpty(_currentOperation))
+                {
+                    CurrentValue = selectionWindow.SelectedValue;
+                    OperationString = selectionWindow.SelectedValue.ToString();
+                }
+                else
+                {
+                    CurrentValue = selectionWindow.SelectedValue;
+                    OperationString += selectionWindow.SelectedValue.ToString();
+                }
+            }
+        }
+
+        private void MemoryAdd(object parameter)
+        {
+            _memory += CurrentValue;
+            _memoryStack.Add(CurrentValue);
+        }
+
         private void MemorySubtract(object parameter) => _memory -= CurrentValue;
+
         private void MemoryStore(object parameter) => _memory = CurrentValue;
 
+        private void MemoryStack(object parameter)
+        {
+            if (_memoryStack.Count == 0)
+            {
+                MessageBox.Show("Stiva de memorie este goală.", "Stiva de Memorie", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
 
+            var selectionWindow = new MemorySelectionWindow(_memoryStack);
+            if (selectionWindow.ShowDialog() == true)
+            {
+                if (string.IsNullOrEmpty(_currentOperation))
+                {
+                    CurrentValue = selectionWindow.SelectedValue;
+                    OperationString = selectionWindow.SelectedValue.ToString();
+                }
+                else
+                {
+                    CurrentValue = selectionWindow.SelectedValue;
+                    OperationString += selectionWindow.SelectedValue.ToString();
+                }
+            }
+        }
+        private void ClearEntireMemory()
+        {
+            _memoryStack.Clear();
+            OnPropertyChanged(nameof(MemoryStack)); // Notifică interfața de schimbare
+        }
+        public ICommand ClearEntireMemoryCommand { get; }
+
+        
         private void SetOperation(object parameter)
         {
             if (parameter is string operation)
