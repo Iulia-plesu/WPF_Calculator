@@ -278,7 +278,7 @@ namespace Calculator
                 //string currentValueStr = CurrentValue.ToString(CultureInfo.InvariantCulture).Replace(",", "").Replace(".", "") + number;
                 string currentValueStr = ConvertFromDecimal(CurrentValue, CurrentBase) + number;
 
-                CurrentValue = ConvertToBase(number, GetBase(CurrentBase));
+                CurrentValue = ConvertToBase(currentValueStr, GetBase(CurrentBase));
 
                 OperationString = FormatOperationStringWithDigitGrouping(OperationString + number);
                 OnPropertyChanged(nameof(CurrentValueDisplay));
