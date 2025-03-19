@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Selectați o valoare din stivă" 
         Height="300" Width="300"
-        Background="#2D2D30">
+        Background="#2D2D30"
+        ResizeMode="NoResize">
 
     <Window.Resources>
         <DataTemplate x:Key="MemoryItemTemplate">

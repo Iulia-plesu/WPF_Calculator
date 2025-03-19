@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 
@@ -12,13 +13,21 @@ namespace Calculator
 
     {
         private string _expressionStr;
+
         public string ExpressionStr
         {
             get => _expressionStr ?? "";
             set
             {
-                _expressionStr = value;
-                OnPropertyChanged(nameof(ExpressionStr));
+                if (Regex.IsMatch(value, @"^[0-9+\-*/.=]*$"))
+                {
+                    _expressionStr = value;
+                    OnPropertyChanged(nameof(ExpressionStr));
+                }
+                else
+                {
+                    MessageBox.Show("Caractere invalide. Te rog introdu numere și operatori validi.", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
@@ -48,12 +57,12 @@ namespace Calculator
             {
                 string infix = ExpressionStr.TrimEnd('=');
                 string rpn = ConvertToRPN(infix);
-                MessageBox.Show($"RPN: {rpn}"); // Debugging: vezi cum arată RPN
+                MessageBox.Show($"RPN: {rpn}");
 
                 double result = EvaluateRPN(rpn);
                 CalculationCompleted?.Invoke(result.ToString());
 
-                MessageBox.Show($"Rezultat: {result}"); // Debugging: vezi rezultatul
+                MessageBox.Show($"Rezultat: {result}");
             }
             catch (Exception ex)
             {

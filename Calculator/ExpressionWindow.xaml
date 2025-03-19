@@ -4,7 +4,8 @@
         xmlns:local="clr-namespace:Calculator"
         Title="Expression Input"
         Height="200" Width="400"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize">
 
 
     <Window.DataContext>

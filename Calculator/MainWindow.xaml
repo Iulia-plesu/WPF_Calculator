@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:Calculator"
         mc:Ignorable="d"
         Title="Calculator" Height="530" Width="318"
-        KeyDown="Window_KeyDown">
+        KeyDown="Window_KeyDown"
+        ResizeMode="NoResize">
     <Window.DataContext>
         <local:Standard/>
     </Window.DataContext>
