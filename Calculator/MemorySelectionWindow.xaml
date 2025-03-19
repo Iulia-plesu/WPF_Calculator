@@ -1,9 +1,99 @@
 ﻿<Window x:Class="Calculator.MemorySelectionWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Selectați o valoare din stivă" Height="300" Width="300">
-    <Grid>
-        <ListBox x:Name="MemoryListBox" Margin="10" SelectionMode="Single" />
-        <Button Content="Selectați" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,240,0,0" Click="SelectButton_Click" />
+        Title="Selectați o valoare din stivă" 
+        Height="300" Width="300"
+        Background="#2D2D30">
+
+    <Window.Resources>
+        <DataTemplate x:Key="MemoryItemTemplate">
+            <Border Background="#2D2D30" CornerRadius="5" Margin="5" Padding="10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="{Binding}" 
+                       Foreground="White" 
+                       FontSize="14" 
+                       VerticalAlignment="Center"/>
+
+                    <Button Content="MR" 
+                    Grid.Column="1" 
+                    Background="#666" 
+                    Foreground="White" 
+                    FontSize="12" 
+                    Padding="5" 
+                    Margin="5,0" 
+                    Click="MemoryRecallButton_Click"/>
+
+                    <Button Content="MC" 
+                    Grid.Column="2" 
+                    Background="#666" 
+                    Foreground="White" 
+                    FontSize="12" 
+                    Padding="5" 
+                    Margin="5,0" 
+                    Click="MemoryDeleteButton_Click"/>
+
+                    <Button Content="M+" 
+                    Grid.Column="3" 
+                    Background="#666" 
+                    Foreground="White" 
+                    FontSize="12" 
+                    Padding="5" 
+                    Margin="5,0" 
+                    Click="MemoryAddButton_Click"/>
+
+                    <Button Content="M-" 
+                    Grid.Column="4" 
+                    Background="#666" 
+                    Foreground="White" 
+                    FontSize="12" 
+                    Padding="5" 
+                    Margin="5,0" 
+                    Click="MemorySubtractButton_Click"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border Background="Transparent">
+                            <ContentPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Resources>
+
+    <Grid Background="#2D2D30">
+        <ListBox x:Name="MemoryListBox" 
+                 Margin="10" 
+                 SelectionMode="Single" 
+                 ItemTemplate="{StaticResource MemoryItemTemplate}"
+                 Background="#2D2D30" 
+                 BorderThickness="0"/>
+
+        <Button Content="Clean Memory" 
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Bottom" 
+                Margin="0,0,0,10" 
+                Padding="10" 
+                Background="#5A4FCF" 
+                Foreground="White" 
+                FontSize="14" 
+                Click="CleanMemoryButton_Click"/>
     </Grid>
 </Window>

@@ -49,6 +49,7 @@ namespace Calculator
         public ICommand ClearEntryCommand { get; }
         public ICommand MemoryStackCommand { get; }
 
+
         public string OperationString
         {
             get => _operationString;
@@ -116,6 +117,8 @@ namespace Calculator
             PercentageCommand = new RelayCommand(CalculatePercentage);
             MemoryStackCommand = new RelayCommand(MemoryStack);
             SwitchToExpressionCommand = new RelayCommand(SwitchToExpression);
+            ClearEntireMemoryCommand = new RelayCommand(ClearEntireMemory);
+
         }
 
         private void AppendNumber(object parameter)
@@ -253,6 +256,36 @@ namespace Calculator
         private void MemorySubtract(object parameter) => _memory -= CurrentValue;
 
         private void MemoryStore(object parameter) => _memory = CurrentValue;
+
+        private void MemoryStack(object parameter)
+        {
+            if (_memoryStack.Count == 0)
+            {
+                MessageBox.Show("Stiva de memorie este goală.", "Stiva de Memorie", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var selectionWindow = new MemorySelectionWindow(_memoryStack);
+            if (selectionWindow.ShowDialog() == true)
+            {
+                if (string.IsNullOrEmpty(_currentOperation))
+                {
+                    CurrentValue = selectionWindow.SelectedValue;
+                    OperationString = selectionWindow.SelectedValue.ToString();
+                }
+                else
+                {
+                    CurrentValue = selectionWindow.SelectedValue;
+                    OperationString += selectionWindow.SelectedValue.ToString();
+                }
+            }
+        }
+        private void ClearEntireMemory()
+        {
+            _memoryStack.Clear();
+            OnPropertyChanged(nameof(MemoryStack)); // Notifică interfața de schimbare
+        }
+        public ICommand ClearEntireMemoryCommand { get; }
 
         private void SetOperation(object parameter)
         {
@@ -421,29 +454,7 @@ namespace Calculator
             _isNewNumber = true;
         }
 
-        private void MemoryStack(object parameter)
-        {
-            if (_memoryStack.Count == 0)
-            {
-                MessageBox.Show("Stiva de memorie este goală.", "Stiva de Memorie", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            var selectionWindow = new MemorySelectionWindow(_memoryStack);
-            if (selectionWindow.ShowDialog() == true)
-            {
-                if (string.IsNullOrEmpty(_currentOperation))
-                {
-                    CurrentValue = selectionWindow.SelectedValue;
-                    OperationString = selectionWindow.SelectedValue.ToString();
-                }
-                else
-                {
-                    CurrentValue = selectionWindow.SelectedValue;
-                    OperationString += selectionWindow.SelectedValue.ToString();
-                }
-            }
-        }
+        
 
         public void SaveSettings()
         {
