@@ -37,6 +37,7 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0, -7, 0, 10"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
@@ -137,21 +138,21 @@
             </ItemsControl>
         </StackPanel>
 
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="20,115,10,10" VerticalAlignment="Top">
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="20,115,20,10" VerticalAlignment="Top">
             <Button x:Name="HEX" Content="HEX" Width="30" Style="{StaticResource BaseButtonStyle}" Click="BaseButton_Click"/>
             <Button x:Name="DEC" Content="DEC" Width="30" Style="{StaticResource BaseButtonStyle}" Click="BaseButton_Click" Background="#666"/>
             <Button x:Name="OCT" Content="OCT" Width="30" Style="{StaticResource BaseButtonStyle}" Click="BaseButton_Click"/>
             <Button x:Name="BIN" Content="BIN" Width="30" Style="{StaticResource BaseButtonStyle}" Click="BaseButton_Click"/>
         </StackPanel>
-        <StackPanel Orientation="Vertical" Margin="40,113,10,10" VerticalAlignment="Top">
-            <TextBox Name="HEXDisplay" FontSize="10" Foreground="White" Background="#1E1E1E" BorderThickness="0" TextAlignment="Right" IsReadOnly="True" Margin="10,5,10,0" Text="{Binding HexDisplay, Mode=OneWay}"/>
-            <TextBox Name="DECDisplay" FontSize="10" Foreground="White" Background="#1E1E1E" BorderThickness="0" TextAlignment="Right" IsReadOnly="True" Margin="10,5,10,0" Text="{Binding DecDisplay, Mode=OneWay}"/>
-            <TextBox Name="OCTDisplay" FontSize="10" Foreground="White" Background="#1E1E1E" BorderThickness="0" TextAlignment="Right" IsReadOnly="True" Margin="10,5,10,0" Text="{Binding OctDisplay, Mode=OneWay}"/>
-            <TextBox Name="BINDisplay" FontSize="10" Foreground="White" Background="#1E1E1E" BorderThickness="0" TextAlignment="Right" IsReadOnly="True" Margin="10,5,10,0" Text="{Binding BinDisplay, Mode=OneWay}"/>
+        <StackPanel Orientation="Vertical" Margin="40,105,10,10" VerticalAlignment="Top">
+            <TextBox Name="HEXDisplay" FontSize="12" Foreground="White" Background="#1E1E1E" BorderThickness="0" TextAlignment="Right" IsReadOnly="True" Margin="20,5,10,0" Text="{Binding HexDisplay, Mode=OneWay}"/>
+            <TextBox Name="DECDisplay" FontSize="12" Foreground="White" Background="#1E1E1E" BorderThickness="0" TextAlignment="Right" IsReadOnly="True" Margin="20,5,10,0" Text="{Binding DecDisplay, Mode=OneWay}"/>
+            <TextBox Name="OCTDisplay" FontSize="12" Foreground="White" Background="#1E1E1E" BorderThickness="0" TextAlignment="Right" IsReadOnly="True" Margin="20,5,10,0" Text="{Binding OctDisplay, Mode=OneWay}"/>
+            <TextBox Name="BINDisplay" FontSize="12" Foreground="White" Background="#1E1E1E" BorderThickness="0" TextAlignment="Right" IsReadOnly="True" Margin="20,5,10,0" Text="{Binding BinDisplay, Mode=OneWay}"/>
         </StackPanel>
 
 
-        <Border Background="#333" CornerRadius="10" Margin="10,190,10,10" Padding="0">
+        <Border Background="#333" CornerRadius="10" Margin="10,192,10,10" Padding="0">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

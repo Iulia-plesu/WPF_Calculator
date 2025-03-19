@@ -82,7 +82,6 @@ namespace Calculator
             SetOperationCommand = new RelayCommand(SetOperation);
             CalculateCommand = new RelayCommand(Calculate);
             ChangeSignCommand = new RelayCommand(ChangeSign);
-            AddDecimalPointCommand = new RelayCommand(AddDecimalPoint);
             ClearCommand = new RelayCommand(Clear);
             BackspaceCommand = new RelayCommand(Backspace);
             ReciprocalCommand = new RelayCommand(Reciprocal);
@@ -117,7 +116,7 @@ namespace Calculator
         {
             get
             {
-                return ConvertFromDecimal(CurrentValue, CurrentBase);
+                return ConvertFromDecimal(CurrentValue, CurrentBase); // Ensure CurrentBase is passed here
             }
         }
 
@@ -162,10 +161,43 @@ namespace Calculator
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        private string FormatWithDigitGrouping(double value)
+        private string FormatWithDigitGrouping(string value, string baseName)
         {
-            return value.ToString("N0", CultureInfo.CurrentCulture);
+            int groupSize = 0;
+
+            switch (baseName)
+            {
+                case "BIN":
+                    groupSize = 4;
+                    break;
+                case "OCT":
+                    groupSize = 3; 
+                    break;
+                case "DEC":
+                    groupSize = 3; 
+                    break;
+                case "HEX":
+                    groupSize = 4;
+                    break;
+            }
+
+            if (string.IsNullOrEmpty(value)) return value;
+
+            string cleanValue = value.Replace(".", "");
+
+            string integerPart = cleanValue.Split('.')[0];
+            var grouped = new List<string>();
+            for (int i = integerPart.Length; i > 0; i -= groupSize)
+            {
+                int groupStart = Math.Max(i - groupSize, 0);
+                grouped.Add(integerPart.Substring(groupStart, i - groupStart));
+            }
+            grouped.Reverse(); 
+            string groupedIntegerPart = string.Join(",", grouped);
+
+            return groupedIntegerPart;
         }
+
 
         private string FormatOperationStringWithDigitGrouping(string operationString)
         {
@@ -176,7 +208,7 @@ namespace Calculator
             {
                 if (double.TryParse(part, out double number))
                 {
-                    formattedParts.Add(FormatWithDigitGrouping(number));
+                    formattedParts.Add(FormatWithDigitGrouping(number.ToString(), CurrentBase));
                 }
                 else
                 {
@@ -186,6 +218,7 @@ namespace Calculator
 
             return string.Join(" ", formattedParts);
         }
+
         private void SwitchToStandard(object parameter)
         {
             Settings.Default.CalculatorMode = "Standard"; 
@@ -309,13 +342,6 @@ namespace Calculator
                 }
             }
         }
-        private void ClearEntireMemory()
-        {
-            _memoryStack.Clear();
-            OnPropertyChanged(nameof(MemoryStack)); // Notifică interfața de schimbare
-        }
-        public ICommand ClearEntireMemoryCommand { get; }
-
         
         private void SetOperation(object parameter)
         {
@@ -368,18 +394,6 @@ namespace Calculator
 
         private void ChangeSign(object parameter) => CurrentValue = -CurrentValue;
 
-        private void AddDecimalPoint(object parameter)
-        {
-            string currentValueStr = ConvertFromDecimal(CurrentValue, CurrentBase);
-
-            if (!currentValueStr.Contains("."))
-            {
-                currentValueStr += ".";
-                CurrentValue = ParseNumber(currentValueStr, CurrentBase);
-                OperationString += ".";
-            }
-        }
-
 
         private void Clear(object parameter)
         {
@@ -428,64 +442,24 @@ namespace Calculator
             }
         }
 
-
-
-
-        private double ConvertFractionalPart(string fractionalPart, string fromBase)
-        {
-            double result = 0;
-            int baseValue = GetBase(fromBase);
-
-            for (int i = 0; i < fractionalPart.Length; i++)
-            {
-                int digit = Convert.ToInt32(fractionalPart[i].ToString(), baseValue);
-                result += digit / Math.Pow(baseValue, i + 1);
-            }
-
-            return result;
-        }
-
-
         private string ConvertFromDecimal(double number, string toBase)
         {
             if (toBase == "DEC")
             {
-                return number.ToString(); 
+                return FormatWithDigitGrouping(number.ToString(), "DEC");  
             }
 
             int integerPart = (int)number;
-            double fractionalPart = number - integerPart;
 
-            string integerResult = Convert.ToString(integerPart, GetBase(toBase)); 
-            string fractionalResult = ConvertFractionalPartToBase(fractionalPart, toBase); 
+            string integerResult = Convert.ToString(integerPart, GetBase(toBase));
 
             if (toBase == "HEX")
             {
-                integerResult = integerResult.ToUpper(); 
-                fractionalResult = fractionalResult.ToUpper();
+                integerResult = integerResult.ToUpper();
             }
 
-            return fractionalResult == "" ? integerResult : $"{integerResult}.{fractionalResult}";
-        }
-
-
-        private string ConvertFractionalPartToBase(double fractionalPart, string toBase)
-        {
-            if (fractionalPart == 0)
-                return "";
-
-            int baseValue = GetBase(toBase);
-            string result = "";
-            for (int i = 0; i < 10; i++)  
-            {
-                fractionalPart *= baseValue;
-                int digit = (int)fractionalPart;
-                result += digit.ToString("X");
-                fractionalPart -= digit;
-                if (fractionalPart == 0)
-                    break;
-            }
-            return result;
+            // Pass the current base name to the formatting function
+            return FormatWithDigitGrouping(integerResult, toBase);
         }
 
 
@@ -509,21 +483,9 @@ namespace Calculator
         private double ParseNumber(string number, string fromBase)
         {
             int baseValue = GetBase(fromBase);
-
-            if (number.Contains("."))
-            {
-                string[] parts = number.Split('.');
-
-                double integerPart = ConvertIntegerPart(parts[0], baseValue);
-
-                double fractionalPart = ConvertFractionalPart(parts[1], baseValue);
-
-                return integerPart + fractionalPart;
-            }
-            else
-            {
-                return ConvertIntegerPart(number, baseValue);
-            }
+            
+            return ConvertIntegerPart(number, baseValue);
+            
         }
 
         private double ConvertIntegerPart(string integerPart, int baseValue)
@@ -542,36 +504,33 @@ namespace Calculator
             return result;
         }
 
-        private double ConvertFractionalPart(string fractionalPart, int baseValue)
-        {
-            double result = 0;
-
-            for (int i = 0; i < fractionalPart.Length; i++)
-            {
-                char digitChar = fractionalPart[i];
-                int digitValue = GetDigitValue(digitChar);
-
-                result += digitValue * Math.Pow(baseValue, -(i + 1));
-            }
-
-            return result;
-        }
 
         private int GetDigitValue(char digitChar)
         {
+            // Handle digit values (0-9)
             if (char.IsDigit(digitChar))
             {
                 return digitChar - '0';
             }
+            // Handle hexadecimal letters (A-F)
             else if (char.IsLetter(digitChar))
             {
-                return char.ToUpper(digitChar) - 'A' + 10;
+                char upperChar = char.ToUpper(digitChar); // Make sure it's uppercase for consistency
+                if (upperChar >= 'A' && upperChar <= 'F')
+                {
+                    return upperChar - 'A' + 10;
+                }
+                else
+                {
+                    throw new FormatException($"Invalid hexadecimal character '{digitChar}' in number.");
+                }
             }
             else
             {
                 throw new FormatException($"Invalid character '{digitChar}' in number.");
             }
         }
+
 
 
 
@@ -624,9 +583,6 @@ namespace Calculator
                     break;
                 case "±":
                     ChangeSign(null);
-                    break;
-                case ".":
-                    AddDecimalPoint(null);
                     break;
                 default:
                     break;
