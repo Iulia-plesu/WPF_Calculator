@@ -26,12 +26,12 @@ namespace Calculator {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool DigitGroupingEnabled {
+        public bool EnableDigitGrouping {
             get {
-                return ((bool)(this["DigitGroupingEnabled"]));
+                return ((bool)(this["EnableDigitGrouping"]));
             }
             set {
-                this["DigitGroupingEnabled"] = value;
+                this["EnableDigitGrouping"] = value;
             }
         }
         

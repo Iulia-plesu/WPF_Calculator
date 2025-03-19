@@ -77,14 +77,6 @@ namespace Calculator
             }
         }
 
-        public string[] CurrentValueDisplay
-        {
-            get
-            {
-                string formattedValue = CurrentValue.ToString("N0", CultureInfo.CurrentCulture);
-                return formattedValue.ToCharArray().Select(c => c.ToString()).ToArray();
-            }
-        }
 
         public Standard()
         {
@@ -121,6 +113,54 @@ namespace Calculator
 
         }
 
+        
+
+        public bool EnableDigitGrouping
+        {
+            get => Settings.Default.EnableDigitGrouping;
+            set
+            {
+                if (Settings.Default.EnableDigitGrouping != value)
+                {
+                    Settings.Default.EnableDigitGrouping = value;
+                    OnPropertyChanged(nameof(EnableDigitGrouping));
+                    Settings.Default.Save();
+                }
+            }
+        }
+
+        private string FormatWithDigitGrouping(double value)
+        {
+            if (EnableDigitGrouping) // Only format if the setting allows it
+            {
+                return value.ToString("N0", CultureInfo.CurrentCulture); // Uses the current culture to group digits
+            }
+            else
+            {
+                return value.ToString(CultureInfo.InvariantCulture); // No grouping, plain format
+            }
+        }
+
+        private string FormatOperationStringWithDigitGrouping(string operationString)
+        {
+            var parts = operationString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var formattedParts = new List<string>();
+
+            foreach (var part in parts)
+            {
+                if (double.TryParse(part, out double number))
+                {
+                    formattedParts.Add(FormatWithDigitGrouping(number)); // Apply digit grouping conditionally
+                }
+                else
+                {
+                    formattedParts.Add(part); // Non-number parts remain unchanged
+                }
+            }
+
+            return string.Join(" ", formattedParts);
+        }
+
         private void AppendNumber(object parameter)
         {
             if (parameter is string number)
@@ -146,6 +186,8 @@ namespace Calculator
                     string currentValueStr = CurrentValue.ToString(CultureInfo.InvariantCulture).Replace(",", "").Replace(".", "");
                     currentValueStr += number;
                     CurrentValue = double.Parse(currentValueStr, CultureInfo.InvariantCulture);
+
+                    // Format operation string with digit grouping if the setting is true
                     OperationString = FormatOperationStringWithDigitGrouping(OperationString + number);
                 }
 
@@ -153,30 +195,17 @@ namespace Calculator
             }
         }
 
-        private string FormatWithDigitGrouping(double value)
+        public string[] CurrentValueDisplay
         {
-            return value.ToString("N0", CultureInfo.CurrentCulture);
-        }
-
-        private string FormatOperationStringWithDigitGrouping(string operationString)
-        {
-            var parts = operationString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            var formattedParts = new List<string>();
-
-            foreach (var part in parts)
+            get
             {
-                if (double.TryParse(part, out double number))
-                {
-                    formattedParts.Add(FormatWithDigitGrouping(number));
-                }
-                else
-                {
-                    formattedParts.Add(part);
-                }
+                string formattedValue = EnableDigitGrouping
+                    ? CurrentValue.ToString("N0", CultureInfo.CurrentCulture)
+                    : CurrentValue.ToString(CultureInfo.InvariantCulture);
+                return formattedValue.ToCharArray().Select(c => c.ToString()).ToArray();
             }
-
-            return string.Join(" ", formattedParts);
         }
+
 
         private void SwitchToStandard(object parameter)
         {

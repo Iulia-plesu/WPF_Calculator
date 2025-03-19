@@ -25,7 +25,6 @@ namespace Calculator
         public ICommand SetOperationCommand { get; }
         public ICommand CalculateCommand { get; }
         public ICommand ChangeSignCommand { get; }
-        public ICommand AddDecimalPointCommand { get; }
         public ICommand ClearCommand { get; }
         public ICommand BackspaceCommand { get; }
         public ICommand ReciprocalCommand { get; }
@@ -116,7 +115,7 @@ namespace Calculator
         {
             get
             {
-                return ConvertFromDecimal(CurrentValue, CurrentBase); // Ensure CurrentBase is passed here
+                return ConvertFromDecimal(CurrentValue, CurrentBase); 
             }
         }
 
@@ -458,7 +457,6 @@ namespace Calculator
                 integerResult = integerResult.ToUpper();
             }
 
-            // Pass the current base name to the formatting function
             return FormatWithDigitGrouping(integerResult, toBase);
         }
 

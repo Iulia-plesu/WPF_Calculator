@@ -74,6 +74,7 @@
                         <MenuItem Header="Cut" Command="{Binding CutCommand}" Style="{StaticResource MenuItemStyle}"/>
                         <MenuItem Header="Copy" Command="{Binding CopyCommand}" Style="{StaticResource MenuItemStyle}"/>
                         <MenuItem Header="Paste" Command="{Binding PasteCommand}" Style="{StaticResource MenuItemStyle}"/>
+                        <CheckBox Content="Enable Digit Grouping" IsChecked="{Binding EnableDigitGrouping}" />
                     </MenuItem>
                 </Menu>
 
