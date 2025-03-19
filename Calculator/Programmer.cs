@@ -2,16 +2,17 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Intrinsics.Arm;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Calculator
 {
     public class Programmer : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-        private List<double> _memoryStack = new List<double>();
         public ICommand SwitchToStandardCommand { get; }
         public ICommand SwitchToProgrammerCommand { get; }
         public ICommand SwitchToExpressionCommand { get; }
@@ -34,9 +35,10 @@ namespace Calculator
         public ICommand CopyCommand { get; }
         public ICommand PasteCommand { get; }
         public ICommand AboutCommand { get; }
-
         public ICommand MemoryStackCommand { get; }
 
+
+        private List<double> _memoryStack = new List<double>();
         private double _memory = 0;
         private double _currentValue = 0;
         private double _firstOperand = 0;
@@ -45,25 +47,11 @@ namespace Calculator
         private bool _isNewNumber = true;
         private string _currentBase = "DEC";
 
+
         public string HexDisplay => ConvertFromDecimal(CurrentValue, "HEX");
         public string DecDisplay => ConvertFromDecimal(CurrentValue, "DEC");
         public string OctDisplay => ConvertFromDecimal(CurrentValue, "OCT");
         public string BinDisplay => ConvertFromDecimal(CurrentValue, "BIN");
-
-        public string CurrentBase
-        {
-            get => _currentBase;
-            set
-            {
-                if (_currentBase != value)
-                {
-                    _currentBase = value;
-                    OnPropertyChanged(nameof(CurrentBase));
-                    OnPropertyChanged(nameof(CurrentValueDisplay));  
-                    Clear(null);  
-                }
-            }
-        }
 
 
         public Programmer()
@@ -94,7 +82,20 @@ namespace Calculator
 
             CultureInfo.CurrentCulture = new CultureInfo("en-GB");
         }
-
+        public string CurrentBase
+        {
+            get => _currentBase;
+            set
+            {
+                if (_currentBase != value)
+                {
+                    _currentBase = value;
+                    OnPropertyChanged(nameof(CurrentBase));
+                    OnPropertyChanged(nameof(CurrentValueDisplay));
+                    Clear(null);
+                }
+            }
+        }
         public double CurrentValue
         {
             get => _currentValue;
@@ -110,17 +111,13 @@ namespace Calculator
                 OnPropertyChanged(nameof(BinDisplay));
             }
         }
-
         public string CurrentValueDisplay
         {
             get
             {
-                return ConvertFromDecimal(CurrentValue, CurrentBase); 
+                return ConvertFromDecimal(CurrentValue, CurrentBase);
             }
         }
-
-
-
         public string OperationString
         {
             get => _operationString;
@@ -131,93 +128,28 @@ namespace Calculator
             }
         }
 
-        private void AppendNumber(object parameter)
+        public bool EnableDigitGrouping
         {
-            if (parameter is string number)
+            get => Settings.Default.EnableDigitGrouping;
+            set
             {
-                if (_isNewNumber)
+                if (Settings.Default.EnableDigitGrouping != value)
                 {
-                    CurrentValue = 0;
-                    _isNewNumber = false;
+                    Settings.Default.EnableDigitGrouping = value;
+                    OnPropertyChanged(nameof(EnableDigitGrouping));
+                    Settings.Default.Save();
                 }
-
-                if (!IsValidInput(number))
-                {
-                    return; 
-                }
-
-                //string currentValueStr = CurrentValue.ToString(CultureInfo.InvariantCulture).Replace(",", "").Replace(".", "") + number;
-                string currentValueStr = ConvertFromDecimal(CurrentValue, CurrentBase) + number;
-
-                CurrentValue = ParseNumber(currentValueStr, CurrentBase);
-
-                OperationString = FormatOperationStringWithDigitGrouping(OperationString + number);
-                OnPropertyChanged(nameof(CurrentValueDisplay));
             }
         }
 
-        protected void OnPropertyChanged(string propertyName)
+        
+        private void ToggleMenu(object parameter)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        private string FormatWithDigitGrouping(string value, string baseName)
-        {
-            int groupSize = 0;
-
-            switch (baseName)
+            if (parameter is Window window && window.FindName("SideMenu") is Border sideMenu)
             {
-                case "BIN":
-                    groupSize = 4;
-                    break;
-                case "OCT":
-                    groupSize = 3; 
-                    break;
-                case "DEC":
-                    groupSize = 3; 
-                    break;
-                case "HEX":
-                    groupSize = 4;
-                    break;
+                sideMenu.Margin = sideMenu.Margin.Left < 0 ? new Thickness(0, 0, 0, 0) : new Thickness(-150, 0, 0, 0);
             }
-
-            if (string.IsNullOrEmpty(value)) return value;
-
-            string cleanValue = value.Replace(".", "");
-
-            string integerPart = cleanValue.Split('.')[0];
-            var grouped = new List<string>();
-            for (int i = integerPart.Length; i > 0; i -= groupSize)
-            {
-                int groupStart = Math.Max(i - groupSize, 0);
-                grouped.Add(integerPart.Substring(groupStart, i - groupStart));
-            }
-            grouped.Reverse(); 
-            string groupedIntegerPart = string.Join(",", grouped);
-
-            return groupedIntegerPart;
         }
-
-
-        private string FormatOperationStringWithDigitGrouping(string operationString)
-        {
-            var parts = operationString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            var formattedParts = new List<string>();
-
-            foreach (var part in parts)
-            {
-                if (double.TryParse(part, out double number))
-                {
-                    formattedParts.Add(FormatWithDigitGrouping(number.ToString(), CurrentBase));
-                }
-                else
-                {
-                    formattedParts.Add(part);
-                }
-            }
-
-            return string.Join(" ", formattedParts);
-        }
-
         private void SwitchToStandard(object parameter)
         {
             Settings.Default.CalculatorMode = "Standard"; 
@@ -231,7 +163,6 @@ namespace Calculator
                 currentWindow.Close();
             }
         }
-
         private void SwitchToProgrammer(object parameter)
         {
             Settings.Default.CalculatorMode = "Programmer"; 
@@ -252,36 +183,328 @@ namespace Calculator
             expressionWindow.Show();
 
         }
-        private void ToggleMenu(object parameter)
+
+
+        private int GetBase(string baseName)
         {
-            if (parameter is Window window && window.FindName("SideMenu") is Border sideMenu)
+            switch (baseName)
             {
-                sideMenu.Margin = sideMenu.Margin.Left < 0 ? new Thickness(0, 0, 0, 0) : new Thickness(-150, 0, 0, 0);
+                case "BIN":
+                    return 2;
+                case "OCT":
+                    return 8;
+                case "DEC":
+                    return 10;
+                case "HEX":
+                    return 16;
+                default:
+                    return 10;
+            }
+        }
+        private int GetDigitValue(char digitChar)
+        {
+            if (char.IsDigit(digitChar))
+            {
+                return digitChar - '0';
+            }
+            else if (char.IsLetter(digitChar))
+            {
+                char upperChar = char.ToUpper(digitChar);
+                if (upperChar >= 'A' && upperChar <= 'F')
+                {
+                    return upperChar - 'A' + 10;
+                }
+                else
+                {
+                    throw new FormatException($"Invalid hexadecimal character '{digitChar}' in number.");
+                }
+            }
+            else
+            {
+                throw new FormatException($"Invalid character '{digitChar}' in number.");
             }
         }
 
-        private void Cut(object parameter)
+        private string ConvertFromDecimal(double number, string toBase)
         {
-            Clipboard.SetText(CurrentValue.ToString());
-            CurrentValue = 0;
-        }
-
-        private void Copy(object parameter)
-        {
-            Clipboard.SetText(CurrentValue.ToString());
-        }
-
-        private void Paste(object parameter)
-        {
-            if (Clipboard.ContainsText())
+            if (toBase == "DEC")
             {
-                string text = Clipboard.GetText();
-                if (double.TryParse(text, out double value))
+                return FormatWithDigitGrouping(number.ToString(CultureInfo.InvariantCulture), "DEC");
+            }
+
+            int integerPart = (int)number;
+
+            string integerResult = System.Convert.ToString(integerPart, GetBase(toBase));
+
+            if (toBase == "HEX")
+            {
+                integerResult = integerResult.ToUpper();
+            }
+
+            return FormatWithDigitGrouping(integerResult, toBase);
+        }
+
+        private double ConvertToBase(string integerPart, int baseValue)
+        {
+            double result = 0;
+            int length = integerPart.Length;
+
+            for (int i = 0; i < length; i++)
+            {
+                char digitChar = integerPart[i];
+                int digitValue = GetDigitValue(digitChar);
+
+                result += digitValue * Math.Pow(baseValue, length - 1 - i);
+            }
+
+            return result;
+        }
+
+        private void AppendNumber(object parameter)
+        {
+            if (parameter is string number)
+            {
+                if (_isNewNumber)
                 {
-                    CurrentValue = value;
+                    CurrentValue = 0;
+                    _isNewNumber = false;
+                }
+
+                if (!IsValidInput(number))
+                {
+                    return; 
+                }
+
+                //string currentValueStr = CurrentValue.ToString(CultureInfo.InvariantCulture).Replace(",", "").Replace(".", "") + number;
+                string currentValueStr = ConvertFromDecimal(CurrentValue, CurrentBase) + number;
+
+                CurrentValue = ConvertToBase(number, GetBase(CurrentBase));
+
+                OperationString = FormatOperationStringWithDigitGrouping(OperationString + number);
+                OnPropertyChanged(nameof(CurrentValueDisplay));
+            }
+        }
+
+        private void Calculate(object parameter)
+        {
+            if (!string.IsNullOrEmpty(_currentOperation))
+            {
+                double secondValue = CurrentValue;
+                double result = 0;
+
+                switch (_currentOperation)
+                {
+                    case "+":
+                        result = _firstOperand + secondValue;
+                        break;
+                    case "-":
+                        result = _firstOperand - secondValue;
+                        break;
+                    case "×":
+                        result = _firstOperand * secondValue;
+                        break;
+                    case "÷":
+                        result = _firstOperand / secondValue;
+                        break;
+                }
+
+                CurrentValue = result;
+                _firstOperand = result;
+                _currentOperation = string.Empty;
+                _isNewNumber = true;
+                OperationString += $" = {ConvertFromDecimal(result, CurrentBase)}";
+            }
+        }
+
+        private void SetOperation(object parameter)
+        {
+            if (parameter is string operation)
+            {
+                if (!_isNewNumber)
+                {
+                    if (!string.IsNullOrEmpty(_currentOperation))
+                    {
+                        Calculate(null);
+                    }
+                    _firstOperand = CurrentValue;
+                    _currentOperation = operation;
+                    _isNewNumber = true;
+                    OperationString += $" {operation} ";
                 }
             }
         }
+
+        
+        
+        private string FormatWithDigitGrouping(string value, string baseName)
+        {
+            if (!EnableDigitGrouping || string.IsNullOrEmpty(value))
+                return value; 
+
+            int groupSize = 0;
+
+            switch (baseName)
+            {
+                case "BIN":
+                    groupSize = 4;
+                    break;
+                case "OCT":
+                    groupSize = 3;
+                    break;
+                case "DEC":
+                    groupSize = 3; 
+                    break;
+                case "HEX":
+                    groupSize = 4;
+                    break;
+            }
+
+            string cleanValue = value.Replace(".", ""); 
+            string integerPart = cleanValue.Split('.')[0]; 
+
+            var grouped = new List<string>();
+            for (int i = integerPart.Length; i > 0; i -= groupSize)
+            {
+                int groupStart = Math.Max(i - groupSize, 0);
+                grouped.Add(integerPart.Substring(groupStart, i - groupStart));
+            }
+
+            grouped.Reverse(); 
+            string groupedIntegerPart = string.Join(",", grouped);
+
+            return groupedIntegerPart;
+        }
+        private string FormatOperationStringWithDigitGrouping(string operationString)
+        {
+            var parts = operationString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var formattedParts = new List<string>();
+
+            foreach (var part in parts)
+            {
+                if (double.TryParse(part, out double number))
+                {
+                    formattedParts.Add(FormatWithDigitGrouping(number.ToString(), CurrentBase));
+                }
+                else
+                {
+                    formattedParts.Add(part);
+                }
+            }
+
+            return string.Join(" ", formattedParts);
+        }
+
+        
+
+
+        private void Clear(object parameter)
+        {
+            CurrentValue = 0;
+            _firstOperand = 0;
+            _currentOperation = string.Empty;
+            OperationString = string.Empty;
+            _isNewNumber = true;
+        }
+        private void Backspace(object parameter)
+        {
+            string currentValueStr = ConvertFromDecimal(CurrentValue, CurrentBase);
+            if (currentValueStr.Length > 1)
+            {
+                currentValueStr = currentValueStr.Substring(0, currentValueStr.Length - 1);
+                CurrentValue = ConvertToBase(currentValueStr, GetBase(CurrentBase));
+                OperationString = OperationString.Substring(0, OperationString.Length - 1);
+            }
+            else
+            {
+                CurrentValue = 0;
+                OperationString = string.Empty;
+            }
+        }
+        private void Reciprocal(object parameter) => CurrentValue = 1 / CurrentValue;
+        private void Square(object parameter) => CurrentValue *= CurrentValue;
+        private void SquareRoot(object parameter) => CurrentValue = Math.Sqrt(CurrentValue);
+        private void ChangeSign(object parameter) => CurrentValue = -CurrentValue;
+
+
+
+        private bool IsValidInput(string input)
+        {
+            switch (CurrentBase)
+            {
+                case "BIN":
+                    return "01".Contains(input) || input == ".";
+                case "OCT":
+                    return "01234567".Contains(input) || input == ".";  
+                case "DEC":
+                    return "0123456789".Contains(input) || input == "."; 
+                case "HEX":
+                    return "0123456789ABCDEF".Contains(input.ToUpper()) || input == "."; 
+                default:
+                    return false;
+            }
+        }
+
+
+
+        
+        public void HandleButtonClick(string buttonContent)
+        {
+            switch (buttonContent)
+            {
+                case "HEX":
+                case "DEC":
+                case "OCT":
+                case "BIN":
+                    CurrentBase = buttonContent;
+                    break;
+                case "A":
+                case "B":
+                case "C":
+                case "D":
+                case "E":
+                case "F":
+                    if (CurrentBase == "HEX")
+                        AppendNumber(buttonContent);
+                    break;
+                case "0":
+                case "1":
+                case "2":
+                case "3":
+                case "4":
+                case "5":
+                case "6":
+                case "7":
+                case "8":
+                case "9":
+                    if (IsValidInput(buttonContent))
+                        AppendNumber(buttonContent);
+                    break;
+                case "+":
+                case "-":
+                case "×":
+                case "÷":
+                    SetOperation(buttonContent);
+                    break;
+                case "=":
+                    Calculate(null);
+                    break;
+                case "CE":
+                    Clear(null);
+                    break;
+                case "⌫":
+                    Backspace(null);
+                    break;
+                case "±":
+                    ChangeSign(null);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+
+
+
         private void MemoryClear() => _memory = 0;
 
         private void MemoryRecall(object parameter)
@@ -341,255 +564,39 @@ namespace Calculator
                 }
             }
         }
-        
-        private void SetOperation(object parameter)
+
+
+
+        private void Cut(object parameter)
         {
-            if (parameter is string operation)
-            {
-                if (!_isNewNumber)
-                {
-                    if (!string.IsNullOrEmpty(_currentOperation))
-                    {
-                        Calculate(null);
-                    }
-                    _firstOperand = CurrentValue;
-                    _currentOperation = operation;
-                    _isNewNumber = true;
-                    OperationString += $" {operation} ";
-                }
-            }
-        }
-
-        private void Calculate(object parameter)
-        {
-            if (!string.IsNullOrEmpty(_currentOperation))
-            {
-                double secondValue = CurrentValue;
-                double result = 0;
-
-                switch (_currentOperation)
-                {
-                    case "+":
-                        result = _firstOperand + secondValue;
-                        break;
-                    case "-":
-                        result = _firstOperand - secondValue;
-                        break;
-                    case "×":
-                        result = _firstOperand * secondValue;
-                        break;
-                    case "÷":
-                        result = _firstOperand / secondValue;
-                        break;
-                }
-
-                CurrentValue = result;
-                _firstOperand = result;
-                _currentOperation = string.Empty;
-                _isNewNumber = true;
-                OperationString += $" = {ConvertFromDecimal(result, CurrentBase)}";
-            }
-        }
-
-        private void ChangeSign(object parameter) => CurrentValue = -CurrentValue;
-
-
-        private void Clear(object parameter)
-        {
+            Clipboard.SetText(CurrentValue.ToString());
             CurrentValue = 0;
-            _firstOperand = 0;
-            _currentOperation = string.Empty;
-            OperationString = string.Empty;
-            _isNewNumber = true;
         }
 
-        private void Backspace(object parameter)
+        private void Copy(object parameter)
         {
-            string currentValueStr = ConvertFromDecimal(CurrentValue, CurrentBase);
-            if (currentValueStr.Length > 1)
-            {
-                currentValueStr = currentValueStr.Substring(0, currentValueStr.Length - 1);
-                CurrentValue = ParseNumber(currentValueStr, CurrentBase);
-                OperationString = OperationString.Substring(0, OperationString.Length - 1);
-            }
-            else
-            {
-                CurrentValue = 0;
-                OperationString = string.Empty;
-            }
+            Clipboard.SetText(CurrentValue.ToString());
         }
 
-
-        private void Reciprocal(object parameter) => CurrentValue = 1 / CurrentValue;
-        private void Square(object parameter) => CurrentValue *= CurrentValue;
-        private void SquareRoot(object parameter) => CurrentValue = Math.Sqrt(CurrentValue);
-
-        private bool IsValidInput(string input)
+        private void Paste(object parameter)
         {
-            switch (CurrentBase)
+            if (Clipboard.ContainsText())
             {
-                case "BIN":
-                    return "01".Contains(input) || input == ".";
-                case "OCT":
-                    return "01234567".Contains(input) || input == ".";  
-                case "DEC":
-                    return "0123456789".Contains(input) || input == "."; 
-                case "HEX":
-                    return "0123456789ABCDEF".Contains(input.ToUpper()) || input == "."; 
-                default:
-                    return false;
-            }
-        }
-
-        private string ConvertFromDecimal(double number, string toBase)
-        {
-            if (toBase == "DEC")
-            {
-                return FormatWithDigitGrouping(number.ToString(), "DEC");  
-            }
-
-            int integerPart = (int)number;
-
-            string integerResult = Convert.ToString(integerPart, GetBase(toBase));
-
-            if (toBase == "HEX")
-            {
-                integerResult = integerResult.ToUpper();
-            }
-
-            return FormatWithDigitGrouping(integerResult, toBase);
-        }
-
-
-        private int GetBase(string baseName)
-        {
-            switch (baseName)
-            {
-                case "BIN":
-                    return 2;
-                case "OCT":
-                    return 8;
-                case "DEC":
-                    return 10;
-                case "HEX":
-                    return 16;
-                default:
-                    return 10;
-            }
-        }
-
-        private double ParseNumber(string number, string fromBase)
-        {
-            int baseValue = GetBase(fromBase);
-            
-            return ConvertIntegerPart(number, baseValue);
-            
-        }
-
-        private double ConvertIntegerPart(string integerPart, int baseValue)
-        {
-            double result = 0;
-            int length = integerPart.Length;
-
-            for (int i = 0; i < length; i++)
-            {
-                char digitChar = integerPart[i];
-                int digitValue = GetDigitValue(digitChar);
-
-                result += digitValue * Math.Pow(baseValue, length - 1 - i);
-            }
-
-            return result;
-        }
-
-
-        private int GetDigitValue(char digitChar)
-        {
-            // Handle digit values (0-9)
-            if (char.IsDigit(digitChar))
-            {
-                return digitChar - '0';
-            }
-            // Handle hexadecimal letters (A-F)
-            else if (char.IsLetter(digitChar))
-            {
-                char upperChar = char.ToUpper(digitChar); // Make sure it's uppercase for consistency
-                if (upperChar >= 'A' && upperChar <= 'F')
+                string text = Clipboard.GetText();
+                if (double.TryParse(text, out double value))
                 {
-                    return upperChar - 'A' + 10;
+                    CurrentValue = value;
                 }
-                else
-                {
-                    throw new FormatException($"Invalid hexadecimal character '{digitChar}' in number.");
-                }
-            }
-            else
-            {
-                throw new FormatException($"Invalid character '{digitChar}' in number.");
-            }
-        }
-
-
-
-
-        public void HandleButtonClick(string buttonContent)
-        {
-            switch (buttonContent)
-            {
-                case "HEX":
-                case "DEC":
-                case "OCT":
-                case "BIN":
-                    CurrentBase = buttonContent;
-                    break;
-                case "A":
-                case "B":
-                case "C":
-                case "D":
-                case "E":
-                case "F":
-                    if (CurrentBase == "HEX")
-                        AppendNumber(buttonContent);
-                    break;
-                case "0":
-                case "1":
-                case "2":
-                case "3":
-                case "4":
-                case "5":
-                case "6":
-                case "7":
-                case "8":
-                case "9":
-                    if (IsValidInput(buttonContent))
-                        AppendNumber(buttonContent);
-                    break;
-                case "+":
-                case "-":
-                case "×":
-                case "÷":
-                    SetOperation(buttonContent);
-                    break;
-                case "=":
-                    Calculate(null);
-                    break;
-                case "CE":
-                    Clear(null);
-                    break;
-                case "⌫":
-                    Backspace(null);
-                    break;
-                case "±":
-                    ChangeSign(null);
-                    break;
-                default:
-                    break;
             }
         }
 
         private void About(object parameter)
         {
             MessageBox.Show("Nume: Iulia\nGrupă: 233", "About");
+        }
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

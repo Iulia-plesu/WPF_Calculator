@@ -11,13 +11,6 @@ namespace Calculator
 {
     public class Standard : ICommand, INotifyPropertyChanged
     {
-        private List<double> _memoryStack = new List<double>();
-        private double _memory = 0;
-        private double _currentValue = 0;
-        private double _firstOperand = 0;
-        private string _currentOperation = string.Empty;
-        private string _operationString = string.Empty;
-        private bool _isNewNumber = true;
 
         public event EventHandler CanExecuteChanged;
         public event PropertyChangedEventHandler PropertyChanged;
@@ -48,34 +41,17 @@ namespace Calculator
         public ICommand PercentageCommand { get; }
         public ICommand ClearEntryCommand { get; }
         public ICommand MemoryStackCommand { get; }
+        public ICommand ClearEntireMemoryCommand { get; }
 
 
-        public string OperationString
-        {
-            get => _operationString;
-            set
-            {
-                if (_operationString != value)
-                {
-                    _operationString = value;
-                    OnPropertyChanged(nameof(OperationString));
-                }
-            }
-        }
 
-        public double CurrentValue
-        {
-            get => _currentValue;
-            set
-            {
-                if (_currentValue != value)
-                {
-                    _currentValue = value;
-                    OnPropertyChanged(nameof(CurrentValue));
-                    OnPropertyChanged(nameof(CurrentValueDisplay));
-                }
-            }
-        }
+        private List<double> _memoryStack = new List<double>();
+        private double _memory = 0;
+        private double _currentValue = 0;
+        private double _firstOperand = 0;
+        private string _currentOperation = string.Empty;
+        private string _operationString = string.Empty;
+        private bool _isNewNumber = true;
 
 
         public Standard()
@@ -113,7 +89,91 @@ namespace Calculator
 
         }
 
+
+
+        private void SwitchToStandard(object parameter)
+        {
+            Settings.Default.CalculatorMode = "Standard";
+            Settings.Default.Save();
+
+            var mainWindow = new MainWindow();
+            mainWindow.Show();
+
+            if (parameter is Window currentWindow)
+            {
+                currentWindow.Close();
+            }
+        }
+
+        private void SwitchToProgrammer(object parameter)
+        {
+            Settings.Default.CalculatorMode = "Programmer";
+            Settings.Default.Save();
+
+            var programmerWindow = new ProgrammerWindow();
+            programmerWindow.Show();
+
+            if (parameter is Window currentWindow)
+            {
+                currentWindow.Close();
+            }
+        }
         
+        private void SwitchToExpression(object parameter)
+        {
+
+            var expressionWindow = new ExpressionWindow();
+            expressionWindow.Show();
+
+        }
+
+        private void ToggleMenu(object parameter)
+        {
+            if (parameter is Window window && window.FindName("SideMenu") is Border sideMenu)
+            {
+                sideMenu.Margin = sideMenu.Margin.Left < 0 ? new Thickness(0, 0, 0, 0) : new Thickness(-150, 0, 0, 0);
+            }
+        }
+
+        
+        
+        public string OperationString
+        {
+            get => _operationString;
+            set
+            {
+                if (_operationString != value)
+                {
+                    _operationString = value;
+                    OnPropertyChanged(nameof(OperationString));
+                }
+            }
+        }
+
+        public double CurrentValue
+        {
+            get => _currentValue;
+            set
+            {
+                if (_currentValue != value)
+                {
+                    _currentValue = value;
+                    OnPropertyChanged(nameof(CurrentValue));
+                    OnPropertyChanged(nameof(CurrentValueDisplay));
+                }
+            }
+        }
+        
+        public string[] CurrentValueDisplay
+        {
+            get
+            {
+                string formattedValue = EnableDigitGrouping
+                    ? CurrentValue.ToString("N0", CultureInfo.CurrentCulture)
+                    : CurrentValue.ToString(CultureInfo.InvariantCulture);
+                return formattedValue.ToCharArray().Select(c => c.ToString()).ToArray();
+            }
+        }
 
         public bool EnableDigitGrouping
         {
@@ -129,15 +189,17 @@ namespace Calculator
             }
         }
 
+
+
         private string FormatWithDigitGrouping(double value)
         {
-            if (EnableDigitGrouping) // Only format if the setting allows it
+            if (EnableDigitGrouping) 
             {
-                return value.ToString("N0", CultureInfo.CurrentCulture); // Uses the current culture to group digits
+                return value.ToString("N0", CultureInfo.CurrentCulture); 
             }
             else
             {
-                return value.ToString(CultureInfo.InvariantCulture); // No grouping, plain format
+                return value.ToString(CultureInfo.InvariantCulture);
             }
         }
 
@@ -150,11 +212,11 @@ namespace Calculator
             {
                 if (double.TryParse(part, out double number))
                 {
-                    formattedParts.Add(FormatWithDigitGrouping(number)); // Apply digit grouping conditionally
+                    formattedParts.Add(FormatWithDigitGrouping(number));
                 }
                 else
                 {
-                    formattedParts.Add(part); // Non-number parts remain unchanged
+                    formattedParts.Add(part);
                 }
             }
 
@@ -187,7 +249,6 @@ namespace Calculator
                     currentValueStr += number;
                     CurrentValue = double.Parse(currentValueStr, CultureInfo.InvariantCulture);
 
-                    // Format operation string with digit grouping if the setting is true
                     OperationString = FormatOperationStringWithDigitGrouping(OperationString + number);
                 }
 
@@ -195,60 +256,9 @@ namespace Calculator
             }
         }
 
-        public string[] CurrentValueDisplay
-        {
-            get
-            {
-                string formattedValue = EnableDigitGrouping
-                    ? CurrentValue.ToString("N0", CultureInfo.CurrentCulture)
-                    : CurrentValue.ToString(CultureInfo.InvariantCulture);
-                return formattedValue.ToCharArray().Select(c => c.ToString()).ToArray();
-            }
-        }
 
 
-        private void SwitchToStandard(object parameter)
-        {
-            Settings.Default.CalculatorMode = "Standard";
-            Settings.Default.Save();
 
-            var mainWindow = new MainWindow();
-            mainWindow.Show();
-
-            if (parameter is Window currentWindow)
-            {
-                currentWindow.Close();
-            }
-        }
-
-        private void SwitchToProgrammer(object parameter)
-        {
-            Settings.Default.CalculatorMode = "Programmer";
-            Settings.Default.Save();
-
-            var programmerWindow = new ProgrammerWindow();
-            programmerWindow.Show();
-
-            if (parameter is Window currentWindow)
-            {
-                currentWindow.Close();
-            }
-        }
-        private void SwitchToExpression(object parameter)
-        {
-
-            var expressionWindow = new ExpressionWindow();
-            expressionWindow.Show();
-
-        }
-
-        private void ToggleMenu(object parameter)
-        {
-            if (parameter is Window window && window.FindName("SideMenu") is Border sideMenu)
-            {
-                sideMenu.Margin = sideMenu.Margin.Left < 0 ? new Thickness(0, 0, 0, 0) : new Thickness(-150, 0, 0, 0);
-            }
-        }
 
         private void MemoryClear() => _memory = 0;
 
@@ -309,12 +319,13 @@ namespace Calculator
                 }
             }
         }
+        
         private void ClearEntireMemory()
         {
             _memoryStack.Clear();
-            OnPropertyChanged(nameof(MemoryStack)); // Notifică interfața de schimbare
+            OnPropertyChanged(nameof(MemoryStack)); 
         }
-        public ICommand ClearEntireMemoryCommand { get; }
+    
 
         private void SetOperation(object parameter)
         {
@@ -404,6 +415,8 @@ namespace Calculator
             }
         }
 
+
+
         private void Backspace(object parameter)
         {
             if (CurrentValue.ToString().Length > 1)
@@ -440,34 +453,6 @@ namespace Calculator
 
         private void SquareRoot(object parameter) => CurrentValue = Math.Sqrt(CurrentValue);
 
-        private void Cut(object parameter)
-        {
-            Clipboard.SetText(CurrentValue.ToString());
-            CurrentValue = 0;
-        }
-
-        private void Copy(object parameter)
-        {
-            Clipboard.SetText(CurrentValue.ToString());
-        }
-
-        private void Paste(object parameter)
-        {
-            if (Clipboard.ContainsText())
-            {
-                string text = Clipboard.GetText();
-                if (double.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out double value))
-                {
-                    CurrentValue = value;
-                }
-            }
-        }
-
-        private void About(object parameter)
-        {
-            MessageBox.Show("Nume: Iulia\nGrupă: 233", "About");
-        }
-
         private void CalculatePercentage(object parameter)
         {
             if (_currentOperation == "+" || _currentOperation == "-")
@@ -495,6 +480,33 @@ namespace Calculator
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        private void Cut(object parameter)
+        {
+            Clipboard.SetText(CurrentValue.ToString());
+            CurrentValue = 0;
+        }
+
+        private void Copy(object parameter)
+        {
+            Clipboard.SetText(CurrentValue.ToString());
+        }
+
+        private void Paste(object parameter)
+        {
+            if (Clipboard.ContainsText())
+            {
+                string text = Clipboard.GetText();
+                if (double.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out double value))
+                {
+                    CurrentValue = value;
+                }
+            }
+        }
+
+        private void About(object parameter)
+        {
+            MessageBox.Show("Nume: Iulia\nGrupă: 233", "About");
+        }
         public bool CanExecute(object parameter) => true;
 
         public void Execute(object parameter) => throw new NotImplementedException();
